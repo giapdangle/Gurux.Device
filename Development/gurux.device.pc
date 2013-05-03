@@ -1,0 +1,6 @@
+Name: Gurux.Device
+Description: Gurux.Device
+Version: 0.1
+
+Requires: 
+Libs: -r:/usr/lib/gurux-device/Gurux.Device.dll

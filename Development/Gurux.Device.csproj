@@ -1,0 +1,211 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="3.5" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <PropertyGroup>
+    <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
+    <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
+    <ProductVersion>9.0.30729</ProductVersion>
+    <SchemaVersion>2.0</SchemaVersion>
+    <ProjectGuid>{C4BB249E-A56A-4675-B406-864280D77BF3}</ProjectGuid>
+    <OutputType>Library</OutputType>
+    <AppDesignerFolder>Properties</AppDesignerFolder>
+    <RootNamespace>Gurux.Device</RootNamespace>
+    <AssemblyName>Gurux.Device</AssemblyName>
+    <TargetFrameworkVersion>v3.5</TargetFrameworkVersion>
+    <FileAlignment>512</FileAlignment>
+    <TargetFrameworkSubset>
+    </TargetFrameworkSubset>
+    <SignAssembly>true</SignAssembly>
+    <AssemblyOriginatorKeyFile>Gurux.Device.snk</AssemblyOriginatorKeyFile>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
+    <DebugSymbols>true</DebugSymbols>
+    <DebugType>full</DebugType>
+    <Optimize>false</Optimize>
+    <OutputPath>bin\Debug\</OutputPath>
+    <DefineConstants>DEBUG;TRACE</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
+    <DebugType>pdbonly</DebugType>
+    <Optimize>true</Optimize>
+    <OutputPath>bin\Release\</OutputPath>
+    <DefineConstants>TRACE</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+  </PropertyGroup>
+  <ItemGroup>
+    <Reference Include="System" />
+    <Reference Include="System.Core">
+    </Reference>
+    <Reference Include="System.Design" />
+    <Reference Include="System.Drawing" />
+    <Reference Include="System.Runtime.Serialization">
+    </Reference>
+    <Reference Include="System.Windows.Forms" />
+    <Reference Include="System.Data" />
+    <Reference Include="System.Xml" />
+    <Reference Include="Common.Logging, Version=1.2.0.0, Culture=neutral, PublicKeyToken=af08829b84f0328e">
+      <HintPath>Common.Logging.dll</HintPath>
+    </Reference>
+    <Reference Include="Quartz, Version=1.0.2.2, Culture=neutral, PublicKeyToken=a10f98584341ff8c">
+      <HintPath>Quartz.dll</HintPath>
+    </Reference>
+    <Reference Include="ICSharpCode.SharpZipLib, Version=0.85.5.452, Culture=neutral, PublicKeyToken=1b03e6acf1164f73">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>SharedLibs\ICSharpCode.SharpZipLib.dll</HintPath>
+    </Reference>
+    <Reference Include="Gurux.Common, Version=7.0.2.1, Culture=neutral, PublicKeyToken=00bee6c3930228bf">
+      <Package>gurux.common</Package>
+    </Reference>
+    <Reference Include="Gurux.Communication, Version=7.0.2.1, Culture=neutral, PublicKeyToken=a149b35b71339451">
+      <Package>gurux.communication</Package>
+    </Reference>
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="AccessMode.cs" />
+    <Compile Include="CategoryStates.cs" />
+    <Compile Include="Editor\GXDataIOSourceActionConverter.cs" />
+    <Compile Include="Editor\GXDataIOSourceDescriptor.cs" />
+    <Compile Include="Editor\GXDataIOSourceEditor.cs" />
+    <Compile Include="Editor\GXDataIOSourceTypeConverter.cs" />
+    <Compile Include="Editor\GXObjectTypeConverter.cs" />
+    <Compile Include="Editor\GXTableColumnEditor.cs" />
+    <Compile Include="Editor\GXValueCollectionEditor.cs" />
+    <Compile Include="Editor\GXValueItem.cs" />
+    <Compile Include="Editor\GXValueItemCollection.cs" />
+    <Compile Include="Editor\GXZip.cs" />
+    <Compile Include="Editor\IGXPartialRead.cs" />
+    <Compile Include="Editor\PartialReadType.cs" />
+    <Compile Include="Editor\ValueAccessAttribute.cs" />
+    <Compile Include="Editor\ValueAccessType.cs" />
+    <Compile Include="GXCategoryStatistics.cs" />
+    <Compile Include="DisabledActions.cs" />
+    <Compile Include="AllowedMediaTypesConverter.cs" />
+    <Compile Include="Editor\GXCollectionPropertyDescriptor.cs" />
+    <Compile Include="Editor\GXCommunicationAttribute.cs" />
+    <Compile Include="Editor\GXCommunicationMessageAttribute.cs" />
+    <Compile Include="Editor\GXDataIOSourceDialog.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="Editor\GXDataIOSourceDialog.Designer.cs">
+      <DependentUpon>GXDataIOSourceDialog.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Editor\GXDataIOSourceType.cs" />
+    <Compile Include="Editor\GXDesigner.cs" />
+    <Compile Include="Editor\GXInitialActionMessage.cs" />
+    <Compile Include="Editor\GXLocalizedDescriptionAttribute.cs" />
+    <Compile Include="Editor\GXPropertyPageType.cs" />
+    <Compile Include="Editor\GXSettingItemAttribute.cs" />
+    <Compile Include="Editor\GXTableColumnConverter.cs" />
+    <Compile Include="Editor\InitialActionType.cs" />
+    <Compile Include="Editor\UITextTypeEditor.cs" />
+    <Compile Include="GenericList.cs" />
+    <Compile Include="GuruxProtocolSearchAddIn.cs" />
+    <Compile Include="GXDelegates.cs" />
+    <Compile Include="GXDeviceCollection.cs" />
+    <Compile Include="Editor\GXDataIOSource.cs" />
+    <Compile Include="Editor\GXLocalizedNameAttribute.cs" />
+    <Compile Include="Editor\GXProtocolAddIn.cs" />
+    <Compile Include="Editor\GXToolboxItemAttribute.cs" />
+    <Compile Include="Editor\GXWizardButtons.cs" />
+    <Compile Include="Editor\IGXComponent.cs" />
+    <Compile Include="Editor\IGXWizardPage.cs" />
+    <Compile Include="GXDeviceGroupCollection.cs" />
+    <Compile Include="GXDeviceGroup.cs" />
+    <Compile Include="Editor\DisplayTypes.cs" />
+    <Compile Include="GXCategoryCollection.cs" />
+    <Compile Include="GXCategory.cs" />
+    <Compile Include="Editor\GXDataIOSourceAttribute.cs" />
+    <Compile Include="GXDevice.cs" />
+    <Compile Include="Editor\GXFlagsEnumConverter.cs" />
+    <Compile Include="Editor\GXIDGenerator.cs" />
+    <Compile Include="Editor\GXNumberEnumeratorConverterAttribute.cs" />
+    <Compile Include="Editor\GXNumberEnumeratorEditor.cs" />
+    <Compile Include="GXDeviceList.cs" />
+    <Compile Include="Editor\GXNoUITypeEditor.cs" />
+    <Compile Include="GXDeviceStatistics.cs" />
+    <Compile Include="GXDeviceType.cs" />
+    <Compile Include="GXDeviceTypeCollection.cs" />
+    <Compile Include="GXEvents.cs" />
+    <Compile Include="GXKeepalive.cs" />
+    <Compile Include="GXMediaType.cs" />
+    <Compile Include="GXMediaTypeCollection.cs" />
+    <Compile Include="GXMediaTypeEditor.cs" />
+    <Compile Include="GXMonitorListener.cs" />
+    <Compile Include="GXParameter.cs" />
+    <Compile Include="GXPropertyCollection.cs" />
+    <Compile Include="GXProperty.cs" />
+    <Compile Include="Editor\GXSite.cs" />
+    <Compile Include="Editor\GXReadMessage.cs" />
+    <Compile Include="GXSchedule.cs" />
+    <Compile Include="GXScheduleCollection.cs" />
+    <Compile Include="GXScheduleJob.cs" />
+    <Compile Include="GXScheduleListener.cs" />
+    <Compile Include="GXScheduleStatistics.cs" />
+    <Compile Include="GXSerializedDevice.cs" />
+    <Compile Include="GXTable.cs" />
+    <Compile Include="GXTableCollection.cs" />
+    <Compile Include="Editor\GXTask.cs" />
+    <Compile Include="Editor\GXTaskCollection.cs" />
+    <Compile Include="Editor\GXTemplateManager.cs" />
+    <Compile Include="Editor\GXTypeConverterNoExpand.cs" />
+    <Compile Include="Editor\GXUITextEditor.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="Editor\GXUserLevelAttribute.cs" />
+    <Compile Include="Editor\GXWriteMessage.cs" />
+    <Compile Include="GXTableColumnAttribute.cs" />
+    <Compile Include="IGXPacketHandler.cs" />
+    <Compile Include="MediaTypeCollectionPropertyDescriptor.cs" />
+    <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="Properties\Resources.Designer.cs">
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+      <DependentUpon>Resources.resx</DependentUpon>
+    </Compile>
+    <Compile Include="PropertyStates.cs" />
+    <Compile Include="Editor\UITextEditor.cs" />
+    <Compile Include="Editor\UserLevelType.cs" />
+    <Compile Include="GXPropertyStatistics.cs" />
+    <Compile Include="ResetType.cs" />
+    <Compile Include="ScheduleAction.cs" />
+    <Compile Include="ScheduleRepeat.cs" />
+    <Compile Include="ScheduleState.cs" />
+    <Compile Include="GXMonitorJob.cs" />
+    <Compile Include="States.cs" />
+    <Compile Include="TableStates.cs" />
+    <Compile Include="GXTableStatistics.cs" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="app.config" />
+    <None Include="Gurux.Device.snk" />
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="Editor\GXDataIOSourceDialog.resx">
+      <DependentUpon>GXDataIOSourceDialog.cs</DependentUpon>
+      <SubType>Designer</SubType>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Editor\GXUITextEditor.resx">
+      <DependentUpon>GXUITextEditor.cs</DependentUpon>
+      <SubType>Designer</SubType>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Properties\Resources.resx">
+      <Generator>ResXFileCodeGenerator</Generator>
+      <LastGenOutput>Resources.Designer.cs</LastGenOutput>
+      <SubType>Designer</SubType>
+    </EmbeddedResource>
+  </ItemGroup>
+  <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
+  <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
+       Other similar extension points exist, see Microsoft.Common.targets.
+  <Target Name="BeforeBuild">
+  </Target>
+  <Target Name="AfterBuild">
+  </Target>
+  -->
+  <PropertyGroup>
+    <PostBuildEvent>
+    </PostBuildEvent>
+  </PropertyGroup>
+</Project>
