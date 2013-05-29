@@ -42,8 +42,8 @@ namespace Gurux.Device
 	/// <remarks>
 	/// If not using .NET Framework, enumeration is GX_CATEGORY_STATISTIC. 
 	/// </remarks>
-	/// <seealso href="M_Gurux_Device_GXCategory_GetStatistic.htm">GetStatistic</seealso>
-	/// <seealso href="M_Gurux_Device_GXCategory_ResetStatistic.htm">ResetStatistic</seealso>
+	/// <seealso cref="GXCategory.GetStatistic">GetStatistic</seealso>
+	/// <seealso cref="GXCategory.ResetStatistic">ResetStatistic</seealso>
 	public class GXCategoryStatistics
 	{
 		/// <summary>

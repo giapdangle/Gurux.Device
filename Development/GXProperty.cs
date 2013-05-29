@@ -269,9 +269,9 @@ namespace Gurux.Device
 		/// to set an unavailable display type as DisplayType is ignored, and the type stays as is.
 		/// </summary>
 		/// <remarks>Display type of all items in GXDeviceList must be changed at the same time.</remarks>
-		/// <seealso href="E_Gurux_Device_GXPropertyCollection_OnUpdated.htm">GXPropertyCollection.PropertyChanged</seealso>
-		/// <seealso href="E_Gurux_Device_GXDevice_OnDisplayTypeChanged.htm">GXDevice.OnDisplayTypeChanged</seealso>
-		/// <seealso href="E_Gurux_Device_GXDeviceList_OnDisplayTypeChanged.htm">GXDeviceList.OnDisplayTypeChanged</seealso>
+		/// <seealso cref="GXPropertyCollection.OnUpdated">GXPropertyCollection.PropertyChanged</seealso>
+		/// <seealso cref="GXDevice.OnDisplayTypeChanged">GXDevice.OnDisplayTypeChanged</seealso>
+		/// <seealso cref="GXDeviceList.OnDisplayTypeChanged">GXDeviceList.OnDisplayTypeChanged</seealso>
         [System.Xml.Serialization.XmlIgnore()]
         [ValueAccess(ValueAccessType.None, ValueAccessType.None)]
         public DisplayTypes DisplayType
@@ -470,7 +470,7 @@ namespace Gurux.Device
         [Browsable(false), EditorBrowsable(EditorBrowsableState.Never)]
         [System.Xml.Serialization.XmlElement("ValueType")]
 		[DataMember(Name = "ValueType", IsRequired = false, EmitDefaultValue = false)]
-		public string ValueTypeName
+		internal string ValueTypeName
         {
             get
             {
@@ -723,7 +723,7 @@ namespace Gurux.Device
 		/// <param name="value">Property value</param>
 		/// <param name="uiValue">Is given vaue UI value or device value.</param>
 		/// <param name="status">A status to be set for the GXProperty after the value has been set.</param>
-		/// <seealso href="T_Gurux_Device_GXValue.htm">GXValue</seealso>
+		/// <seealso cref="T_Gurux_Device_GXValue">GXValue</seealso>
         public void SetValue(object value, bool uiValue, PropertyStates status)
         {
             bool change = false;
@@ -847,7 +847,7 @@ namespace Gurux.Device
 		/// <remarks>
 		/// GXDevice updates ReadTime automatically.
 		/// </remarks>
-		/// <seealso href="E_Gurux_Device_GXPropertyCollection_OnUpdated.htm">GXPropertyCollection.PropertyChanged</seealso>
+		/// <seealso cref="GXPropertyCollection.OnUpdated">GXPropertyCollection.PropertyChanged</seealso>
         [ValueAccess(ValueAccessType.None, ValueAccessType.None)]
         [System.Xml.Serialization.XmlIgnore()]
         public DateTime ReadTime
@@ -862,7 +862,7 @@ namespace Gurux.Device
 		/// <remarks>
 		/// GXDevice updates WriteTime automatically.
 		/// </remarks>
-		/// <seealso href="E_Gurux_Device_GXPropertyCollection_OnUpdated.htm">GXPropertyCollection.PropertyChanged</seealso>
+		/// <seealso cref="GXPropertyCollection.OnUpdated">GXPropertyCollection.PropertyChanged</seealso>
         [ValueAccess(ValueAccessType.None, ValueAccessType.None)]
         [System.Xml.Serialization.XmlIgnore()]
         public DateTime WriteTime

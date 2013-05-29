@@ -1,4 +1,4 @@
-//
+﻿//
 // --------------------------------------------------------------------------
 //  Gurux Ltd
 // 
@@ -30,46 +30,15 @@
 // Full text may be retrieved at http://www.gnu.org/licenses/gpl-2.0.txt
 //---------------------------------------------------------------------------
 
-using System;
-using System.Collections.Generic;
-using System.Text;
-
 namespace Gurux.Device
 {
-   /// <summary>
-	/// Determines the status of a GXCategory, the enumeration tells, what has happened to the GXCategory.
-	/// </summary>
-	/// <remarks>
-	/// If not using .NET Framework, enumeration is GX_CATEGORY_STATE.
-	/// </remarks>
-	/// <seealso cref="GXDevice.OnCategoryChanged">GXDeviceEvents.OnCategoryChanged</seealso>
-	/// <seealso cref="GXDeviceList.OnCategoryChanged">GXDeviceListEvents.OnCategoryChanged</seealso>
-	[Flags]
-	public enum CategoryStates : int
-	{
-		/// <summary>
-		/// No changes.
-		/// </summary>
-		None = 0x0,
-		/// <summary>
-		/// Name of the category has changed.
-		/// </summary>
-		Updated = 0x1,
-		/// <summary>
-		/// Reading of a GXCategory has started.
-		/// </summary>
-		ReadStart = 0x2,
-		/// <summary>
-		/// Reading of a GXCategory has ended.
-		/// </summary>
-		ReadEnd = 0x4,
-		/// <summary>
-		/// Writing of a GXCategory has started.
-		/// </summary>
-		WriteStart = 0x8,
-		/// <summary>
-		/// Writing of a GXCategory has ended.
-		/// </summary>
-		WriteEnd = 0x10
-	};
+    /// <summary>
+    /// Gurux.Device describes all meter registers and makes logical device from the physical device. 
+    /// Using this idea it it can be control different devices from different manufacturers with 
+    /// same program.
+    /// </summary>
+    [System.Runtime.CompilerServices.CompilerGenerated]
+    class NamespaceDoc
+    {
+    }
 }

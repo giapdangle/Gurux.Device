@@ -42,9 +42,9 @@ namespace Gurux.Device
 	/// <remarks>
 	/// If not using .NET Framework, enumeration is GX_RESET_TYPE.
 	/// </remarks>
-	/// <seealso href="M_Gurux_Device_GXDevice_Reset.htm">GXDevice.Reset</seealso>
-	/// <seealso href="M_Gurux_Device_GXDeviceGroup_ResetDevices.htm">GXDeviceGroup.ResetDevices</seealso>
-	/// <seealso href="M_Gurux_Device_GXDeviceList_ResetDevices.htm">GXDeviceList.ResetDevices</seealso>
+	/// <seealso cref="GXDevice.Reset">GXDevice.Reset</seealso>
+	/// <seealso cref="GXDeviceGroup.ResetDevices">GXDeviceGroup.ResetDevices</seealso>
+	/// <seealso cref="GXDeviceList.ResetDevices">GXDeviceList.ResetDevices</seealso>
 	[Flags]
     public enum ResetTypes : int
 	{

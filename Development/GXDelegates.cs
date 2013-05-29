@@ -516,9 +516,9 @@ namespace Gurux.Device
 	/// Determines severity level. -1 is reserved for internal errors.
 	/// System has no predefined error levels, so the scaling is solely user defined.
 	/// </param>
-	/// <seealso href="E_Gurux_Device_GXDevice_OnUpdated.htm">GXDevice.PropertyChanged</seealso>
-	/// <seealso href="M_Gurux_Device_GXDevice_Connect.htm">GXDevice.Connect</seealso>
-	/// <seealso href="M_Gurux_Device_GXDevice_NotifyPropertyChange.htm">GXDevice.NotifyPropertyChange</seealso>
+	/// <seealso cref="GXDevice.OnUpdated">GXDevice.PropertyChanged</seealso>
+	/// <seealso cref="GXDevice.Connect">GXDevice.Connect</seealso>
+	/// <seealso cref="GXDevice.NotifyPropertyChange">GXDevice.NotifyPropertyChange</seealso>
     public delegate void Error(object sender, string errorInfo, Int32 severity);
 
 	/// <summary>

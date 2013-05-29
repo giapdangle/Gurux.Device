@@ -74,6 +74,7 @@
     <Compile Include="Editor\GXValueCollectionEditor.cs" />
     <Compile Include="Editor\GXValueItem.cs" />
     <Compile Include="Editor\GXValueItemCollection.cs" />
+    <Compile Include="Editor\GXValueTypeEditor.cs" />
     <Compile Include="Editor\GXZip.cs" />
     <Compile Include="Editor\IGXPartialRead.cs" />
     <Compile Include="Editor\PartialReadType.cs" />
@@ -124,6 +125,7 @@
     <Compile Include="Editor\GXNumberEnumeratorEditor.cs" />
     <Compile Include="GXDeviceList.cs" />
     <Compile Include="Editor\GXNoUITypeEditor.cs" />
+    <Compile Include="NamespaceDoc.cs" />
     <Compile Include="PresetDevices\DownloadState.cs" />
     <Compile Include="PresetDevices\GXDeviceManufacturer.cs" />
     <Compile Include="PresetDevices\GXDeviceManufacturerCollection.cs" />

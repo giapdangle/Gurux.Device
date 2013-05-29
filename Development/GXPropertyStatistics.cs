@@ -39,8 +39,8 @@ namespace Gurux.Device
 	/// <summary>
 	/// Contains statistics for GXProperty.
 	/// </summary>
-	/// <seealso href="M_Gurux_Device_GXProperty_GetStatistic.htm">GetStatistic</seealso>
-	/// <seealso href="M_Gurux_Device_GXProperty_ResetStatistic.htm">ResetStatistic</seealso>
+	/// <seealso cref="GXProperty.GetStatistic">GetStatistic</seealso>
+	/// <seealso cref="GXProperty.ResetStatistic">ResetStatistic</seealso>
 	public class GXPropertyStatistics
 	{
 		/// <summary>

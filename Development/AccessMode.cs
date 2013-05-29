@@ -43,7 +43,7 @@ namespace Gurux.Device
 	/// <remarks>
 	/// If not using .NET Framework, enumeration is GX_ACCESS_MODE.
 	/// </remarks>
-	/// <seealso href="P_Gurux_Device_GXProperty_AccessMode.htm">GXProperty.AccessMode</seealso>
+    /// <seealso cref="GXProperty.AccessMode">GXProperty.AccessMode</seealso>
 	/// <example>
 	/// <code>
 	/// If (GXProperty1.AccessMode = GX_ACCESS_READ Or GXProperty1.AccessMode = GX_ACCESS_READWRITE) Then

@@ -1435,8 +1435,8 @@ namespace Gurux.Device
 		/// <summary>
 		/// Status is an enumerated state of the device.
 		/// </summary>
-		/// <seealso href="E_Gurux_Device_GXDevice_OnDeviceStateChanged.htm">OnDeviceStateChanged</seealso>
-		/// <seealso href="E_Gurux_Device_GXDeviceList_OnDeviceStateChanged.htm">GXDeviceList.OnDeviceStateChanged</seealso>
+		/// <seealso cref="GXDevice.OnDeviceStateChanged">OnDeviceStateChanged</seealso>
+		/// <seealso cref="GXDeviceList.OnDeviceStateChanged">GXDeviceList.OnDeviceStateChanged</seealso>
 		[ValueAccess(ValueAccessType.None, ValueAccessType.None)]
 		[System.Xml.Serialization.XmlIgnore()]
 		public DeviceStates Status

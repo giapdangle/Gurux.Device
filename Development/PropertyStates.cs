@@ -42,16 +42,16 @@ namespace Gurux.Device
 	/// <remarks>
 	/// If not using .NET Framework, enumeration is GX_PROPERTY_STATE.
 	/// </remarks>
-	/// <seealso href="P_Gurux_Device_GXProperty_Status.htm">GXProperty.Status</seealso>
-	/// <seealso href="M_Gurux_Device_GXProperty_NotifyPropertyChange.htm">GXProperty.NotifyPropertyChange</seealso>
-	/// <seealso href="M_Gurux_Device_GXProperty_SetValue.htm">GXProperty.SetValue</seealso>
-	/// <seealso href="M_Gurux_Device_GXPropertyCollection_NotifyPropertyChange.htm">GXPropertyCollection.NotifyPropertyChange</seealso>
-	/// <seealso href="M_Gurux_Device_GXDevice_NotifyPropertyChange.htm">GXDevice.NotifyPropertyChange</seealso>
-	/// <seealso href="M_Gurux_Device_GXRow_SetValue.htm">GXRow.SetValue</seealso>
-	/// <seealso href="E_Gurux_Device_GXProperty_OnUpdated.htm">GXPropertyEvents.PropertyChanged</seealso>
-	/// <seealso href="E_Gurux_Device_GXPropertyCollection_OnUpdated.htm">GXPropertyCollectionEvents.PropertyChanged</seealso>
-	/// <seealso href="E_Gurux_Device_GXDevice_OnUpdated.htm">GXDeviceEvents.PropertyChanged</seealso>
-	/// <seealso href="E_Gurux_Device_GXDeviceList_OnUpdated.htm">GXDeviceListEvents.PropertyChanged</seealso>
+	/// <seealso cref="GXProperty.Status">GXProperty.Status</seealso>
+	/// <seealso cref="GXProperty.NotifyPropertyChange">GXProperty.NotifyPropertyChange</seealso>
+	/// <seealso cref="GXProperty.SetValue">GXProperty.SetValue</seealso>
+	/// <seealso cref="GXPropertyCollection.NotifyPropertyChange">GXPropertyCollection.NotifyPropertyChange</seealso>
+	/// <seealso cref="GXDevice.NotifyPropertyChange">GXDevice.NotifyPropertyChange</seealso>
+	/// <seealso cref="GXRow.SetValue">GXRow.SetValue</seealso>
+	/// <seealso cref="GXProperty.OnUpdated">GXPropertyEvents.PropertyChanged</seealso>
+	/// <seealso cref="GXPropertyCollection.OnUpdated">GXPropertyCollectionEvents.PropertyChanged</seealso>
+	/// <seealso cref="GXDevice.OnUpdated">GXDeviceEvents.PropertyChanged</seealso>
+	/// <seealso cref="GXDeviceList.OnUpdated">GXDeviceListEvents.PropertyChanged</seealso>
 	[Flags]
 	public enum PropertyStates : int
 	{

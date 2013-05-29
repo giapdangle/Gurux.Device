@@ -42,8 +42,8 @@ namespace Gurux.Device
 	/// <remarks>
 	/// If not using .NET Framework, enumeration is GX_TABLE_STATE.
 	/// </remarks>
-	/// <seealso href="E_Gurux_Device_GXDevice_OnTableChanged.htm">GXDeviceEvents.OnTableChanged</seealso>
-	/// <seealso href="E_Gurux_Device_GXDeviceList_OnTableChanged.htm">GXDeviceListEvents.OnTableChanged</seealso>
+	/// <seealso cref="GXDevice.OnTableChanged">GXDeviceEvents.OnTableChanged</seealso>
+	/// <seealso cref="GXDeviceList.OnTableChanged">GXDeviceListEvents.OnTableChanged</seealso>
 	[Flags]
 	public enum TableStates : int
 	{

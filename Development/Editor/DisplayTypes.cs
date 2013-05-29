@@ -43,13 +43,13 @@ namespace Gurux.Device.Editor
 	/// <remarks>
 	/// If not using .NET Framework, enumeration is GX_DISPLAY_TYPE.
 	/// </remarks>
-	/// <seealso href="P_Gurux_Device_GXProperty_DisplayType.htm">GXProperty.DisplayType</seealso>
-	/// <seealso href="P_Gurux_Device_GXProperty_AvailableDisplayTypes.htm">GXProperty.AvailableDisplayTypes</seealso>
-	/// <seealso href="P_Gurux_Device_GXDeviceList_DisplayType.htm">GXDeviceList.DisplayType</seealso>
-	/// <seealso href="E_Gurux_Device_GXProperty_OnDisplayTypeChanged.htm">GXPropertyEvents.OnDisplayTypeChanged</seealso>
-	/// <seealso href="E_Gurux_Device_GXPropertyCollection_OnDisplayTypeChanged.htm">GXPropertyCollectionEvents.OnDisplayTypeChanged</seealso>
-	/// <seealso href="E_Gurux_Device_GXDevice_OnDisplayTypeChanged.htm">GXDeviceEvents.OnDisplayTypeChanged</seealso>
-	/// <seealso href="E_Gurux_Device_GXDeviceList_OnDisplayTypeChanged.htm">GXDeviceListEvents.OnDisplayTypeChanged</seealso>
+	/// <seealso cref="GXProperty.DisplayType">GXProperty.DisplayType</seealso>
+	/// <seealso cref="GXProperty.AvailableDisplayTypes">GXProperty.AvailableDisplayTypes</seealso>
+	/// <seealso cref="GXDeviceList.DisplayType">GXDeviceList.DisplayType</seealso>
+	/// <seealso cref="GXProperty.OnDisplayTypeChanged">GXPropertyEvents.OnDisplayTypeChanged</seealso>
+	/// <seealso cref="GXPropertyCollection.OnDisplayTypeChanged">GXPropertyCollectionEvents.OnDisplayTypeChanged</seealso>
+	/// <seealso cref="GXDevice.OnDisplayTypeChanged">GXDeviceEvents.OnDisplayTypeChanged</seealso>
+	/// <seealso cref="GXDeviceList.OnDisplayTypeChanged">GXDeviceListEvents.OnDisplayTypeChanged</seealso>
 	[Flags]
 	public enum DisplayTypes : int
 	{
