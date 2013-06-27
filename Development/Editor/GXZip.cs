@@ -329,6 +329,42 @@ namespace Gurux.Device.Editor
 			}
 		}
 
+        /// <summary>
+        /// Load AddIns to own namespace.
+        /// </summary>
+        class GXProxyClass : MarshalByRefObject
+        {
+            public List<string> Assemblies = new List<string>();
+            string TargetDirectory;
+
+            public void FindAddInReferences(string assemblyName)
+            {
+                TargetDirectory = Path.GetDirectoryName(assemblyName);
+                AppDomain.CurrentDomain.AssemblyResolve += new ResolveEventHandler(CurrentDomain_AssemblyResolve);
+                Assembly assembly = Assembly.LoadFile(assemblyName);                
+                foreach (Type type in assembly.GetTypes())
+                {
+                    //Do not remove.
+                    //Loop all types to load them.                    
+                }               
+                AppDomain.CurrentDomain.AssemblyResolve -= new ResolveEventHandler(CurrentDomain_AssemblyResolve);
+            }
+
+            System.Reflection.Assembly CurrentDomain_AssemblyResolve(object sender, ResolveEventArgs args)
+            {
+                foreach (string it in Directory.GetFiles(TargetDirectory, "*.dll"))
+                {
+                    Assembly asm = Assembly.LoadFile(it);
+                    if (asm.GetName().ToString() == args.Name)
+                    {
+                        Assemblies.Add(it);
+                        return asm;
+                    }
+                }
+                return null;
+            }
+        }
+
 		/// <summary>
         /// Exports a device from GXDeviceEditor to a .gxz file. 
 		/// </summary>
@@ -371,21 +407,22 @@ namespace Gurux.Device.Editor
                 ZipEntry DLLEntry = new ZipEntry(fi2.Name);
                 s.PutNextEntry(DLLEntry);
                 s.Write(DLLBuffer, 0, DLLBuffer.Length);
-
+                //////////////////////////////////
                 //Add referenced assemblies from the same directory
-                var references = device.m_AddIn.GetType().Assembly.GetReferencedAssemblies();
-                List<string> refNames = new List<string>();
-                foreach (var reference in references)
+                // Create an Application Domain:
+                string pathToDll = typeof(GXZip).Assembly.CodeBase;
+                AppDomainSetup domainSetup = new AppDomainSetup { PrivateBinPath = pathToDll };
+                System.AppDomain td = AppDomain.CreateDomain("AddInReferencesDomain", null, domainSetup);
+                try
                 {
-                    refNames.Add(reference.FullName);
-                }
-                string dirPath = Path.GetDirectoryName(device.m_AddIn.GetType().Assembly.Location);
-                string[] dlls = Directory.GetFiles(dirPath, "*.dll");
-                foreach (string asmPath in dlls)
-                {
-                    Assembly asm = Assembly.LoadFile(asmPath);
-                    if (refNames.Contains(asm.GetName().FullName))
+                    GXProxyClass pc = (GXProxyClass)(td.CreateInstanceFromAndUnwrap(pathToDll, typeof(GXProxyClass).FullName));
+                    path = string.Empty;
+                    List<string> medias = new List<string>();
+                    pc.FindAddInReferences(DLLFile);
+
+                    foreach (string asmPath in pc.Assemblies)
                     {
+                        Assembly asm = Assembly.LoadFile(asmPath);
                         //Save Dll file
                         DLLFile = asm.Location;
                         DLLFS = File.OpenRead(DLLFile);
@@ -397,6 +434,10 @@ namespace Gurux.Device.Editor
                         s.Write(DLLBuffer, 0, DLLBuffer.Length);
                     }
                 }
+                finally
+                {
+                    System.AppDomain.Unload(td);
+                }                
             }
         }
 

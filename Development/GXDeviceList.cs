@@ -835,20 +835,35 @@ namespace Gurux.Device
             public void ImportProtocolAddIns(string path, string target, List<string> foundProtocols)
             {
                 TargetDirectory = path;
-                AppDomain.CurrentDomain.AssemblyResolve += new ResolveEventHandler(CurrentDomain_AssemblyResolve);
-                Assembly asm = Assembly.LoadFile(target);
-                Dictionary<string, GXProtocolAddIn> protocols = new Dictionary<string, GXProtocolAddIn>();
-                FindProtocolAddIns(protocols, asm);
-                foreach (var it in protocols)
+                try
                 {
-                    if (!foundProtocols.Contains(it.Key))
+                    AppDomain.CurrentDomain.AssemblyResolve += new ResolveEventHandler(CurrentDomain_AssemblyResolve);
+                    Assembly asm = null;
+                    try
                     {
-                        Protocols.Add(it.Value.GetType().Assembly.Location);
+                        asm = Assembly.LoadFile(target);
                     }
-                    else
+                    catch
                     {
-                        Assemblies.Clear();
+                        return;
                     }
+                    Dictionary<string, GXProtocolAddIn> protocols = new Dictionary<string, GXProtocolAddIn>();
+                    FindProtocolAddIns(protocols, asm);
+                    foreach (var it in protocols)
+                    {
+                        if (!foundProtocols.Contains(it.Key))
+                        {
+                            Protocols.Add(it.Value.GetType().Assembly.Location);
+                        }
+                        else
+                        {
+                            Assemblies.Clear();
+                        }
+                    }
+                }
+                finally
+                {
+                    AppDomain.CurrentDomain.AssemblyResolve -= new ResolveEventHandler(CurrentDomain_AssemblyResolve);
                 }
             }
 
@@ -856,7 +871,15 @@ namespace Gurux.Device
             {
                 foreach (string it in Directory.GetFiles(TargetDirectory, "*.dll"))
                 {
-                    Assembly asm = Assembly.LoadFile(it);
+                    Assembly asm;
+                    try
+                    {
+                        asm = Assembly.LoadFile(it);
+                    }
+                    catch
+                    {
+                        continue;
+                    }
                     if (asm.GetName().ToString() == args.Name)
                     {
                         Assemblies.Add(it);

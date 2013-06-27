@@ -76,6 +76,9 @@ namespace Gurux.Device.PresetDevices
             set;
         }
 
+        /// <summary>
+        /// Version list of device model(s).
+        /// </summary>
         [DataMember(IsRequired = true)]
         public GXDeviceVersionCollection Versions
         {
