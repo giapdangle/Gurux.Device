@@ -342,6 +342,10 @@ namespace Gurux.Device
         /// <param name="isUIValue"></param>
 		public void AddRows(int index, List<object[]> rows, bool isUIValue)
         {
+            if (index == -1)
+            {
+                index = m_UIValues.Count;
+            }
 			List<object[]> inputList = new List<object[]>();
 			List<object[]> convertedList = new List<object[]>();
 			foreach (object[] arr in rows)
