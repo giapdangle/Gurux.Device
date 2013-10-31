@@ -82,6 +82,7 @@ namespace Gurux.Device
 		private object m_transactionsync;
         object TransactionObject;
         int TransactionCount, TransactionPos;
+        bool Closing;
 
 		[DataMember(Name = "ID", IsRequired = false, EmitDefaultValue = false)]
 		ulong m_ID;
@@ -1601,6 +1602,7 @@ namespace Gurux.Device
 		/// </summary>
 		public void Connect()
 		{
+            Closing = false;
             GXClient.Trace = this.Trace;
             if (!Tracing && this.Trace != System.Diagnostics.TraceLevel.Off)
             {
@@ -1658,6 +1660,7 @@ namespace Gurux.Device
 		{
 			try
 			{
+                Closing = true;
                 StopMonitoring();
 				Keepalive.Stop();
 				GXClient.CloseMedia();
@@ -1911,7 +1914,7 @@ namespace Gurux.Device
                         }
                         else
                         {
-                            while (!this.PacketHandler.IsTransactionComplete(sender, att.IsAllSentMessageHandler, packet))
+                            while (!Closing && !this.PacketHandler.IsTransactionComplete(sender, att.IsAllSentMessageHandler, packet))
                             {
                                 if (Keepalive.TransactionResets)
                                 {
@@ -2092,6 +2095,10 @@ namespace Gurux.Device
 						TransactionCount = this.Tables.Count;
 						foreach (GXCategory cat in this.Categories)
 						{
+                            if (Closing)
+                            {
+                                break;
+                            }
                             if (GXDeviceList.CanExecute(cat.DisabledActions, Status, read))
                             {
                                 TransactionCount += cat.Properties.Count + 1;
@@ -2103,7 +2110,7 @@ namespace Gurux.Device
 					{
 						foreach (GXCategory it in this.Categories)
 						{
-                            if (GXDeviceList.CanExecute(it.DisabledActions, Status, read))
+                            if (!Closing && GXDeviceList.CanExecute(it.DisabledActions, Status, read))
                             {
                                 List<KeyValuePair<GXCommunicationMessageAttribute, object>> attributes = new List<KeyValuePair<GXCommunicationMessageAttribute, object>>();
                                 GetCommunicationMessageAttributes(it, read ? typeof(GXReadMessage) : typeof(GXWriteMessage), attributes, false);
@@ -2129,7 +2136,7 @@ namespace Gurux.Device
 						}
 						foreach (GXTable it in this.Tables)
 						{
-                            if (GXDeviceList.CanExecute(it.DisabledActions, Status, read))
+                            if (!Closing && GXDeviceList.CanExecute(it.DisabledActions, Status, read))
                             {
                                 List<KeyValuePair<GXCommunicationMessageAttribute, object>> attributes = new List<KeyValuePair<GXCommunicationMessageAttribute, object>>();
                                 GetCommunicationMessageAttributes(it, read ? typeof(GXReadMessage) : typeof(GXWriteMessage), attributes, false);
@@ -2196,6 +2203,10 @@ namespace Gurux.Device
 							GetCommunicationMessageAttributes(it, read ? typeof(GXReadMessage) : typeof(GXWriteMessage), attributes, false);
 							foreach (var cAtt in attributes)
 							{
+                                if (Closing)
+                                {
+                                    break;
+                                }
 								if (!Execute(it, client, cAtt.Key, initialTransaction, read))
 								{
 									return false;
@@ -2219,6 +2230,10 @@ namespace Gurux.Device
 						GetCommunicationMessageAttributes(device, read ? typeof(GXReadMessage) : typeof(GXWriteMessage), attributes, false);
 						foreach (var cAtt in attributes)
 						{
+                            if (Closing)
+                            {
+                                break;
+                            }
 							if (!Execute(device, client, cAtt.Key, initialTransaction, read))
 							{
 								return false;
@@ -2238,7 +2253,7 @@ namespace Gurux.Device
 						bFound = true;
                         foreach (GXProperty it in (sender as GXCategory).Properties)
 						{
-                            if (GXDeviceList.CanExecute(it.DisabledActions, Status, read))
+                            if (!Closing && GXDeviceList.CanExecute(it.DisabledActions, Status, read))
                             {
                                 NotifyTransactionProgress(this, new GXTransactionProgressEventArgs(it, TransactionPos++, TransactionCount, read ? DeviceStates.ReadStart : DeviceStates.ReadStart));
                                 List<KeyValuePair<GXCommunicationMessageAttribute, object>> attributes = new List<KeyValuePair<GXCommunicationMessageAttribute, object>>();
@@ -2293,6 +2308,10 @@ namespace Gurux.Device
 						GetCommunicationMessageAttributes(device, read ? typeof(GXReadMessage) : typeof(GXWriteMessage), attributes, false);
 						foreach (var cAtt in attributes)
 						{
+                            if (Closing)
+                            {
+                                break;
+                            }
 							if (!Execute(device, client, cAtt.Key, initialTransaction, read))
 							{
 								return false;
