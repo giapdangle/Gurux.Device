@@ -91,7 +91,8 @@ namespace Gurux.Device
 		/// Initializes a new instance of the GXTable class.
 		/// </summary>
 		public GXTable()
-		{            
+		{
+            TransactionDelay = -1;
             AccessMode = Gurux.Device.AccessMode.Read;
             Columns = new GXPropertyCollection();
             Statistics = new GXTableStatistics();
@@ -103,7 +104,8 @@ namespace Gurux.Device
         /// Override this to made changes before property load.
         /// </summary>
         protected override void OnDeserializing(bool designMode)
-		{			
+		{
+            TransactionDelay = -1;
 			AccessMode = Gurux.Device.AccessMode.ReadWrite;
 			Columns = new GXPropertyCollection();
 			Statistics = new GXTableStatistics();
@@ -148,6 +150,21 @@ namespace Gurux.Device
                     break;
                 }
             }
+        }
+
+        /// <summary>
+        /// TransactionDelay is the minimum transaction delay time, in milliseconds, between transactions.
+        /// </summary>
+        [System.ComponentModel.Category("Behavior"), System.ComponentModel.Description("TransactionDelay is the minimum transaction delay time, in milliseconds, between transactions."),
+        TypeConverter(typeof(GXNumberEnumeratorConverter)), GXNumberEnumeratorConverterAttribute(typeof(TransactionDelayEnum)),
+        DefaultValue(-1)]
+        [GXUserLevelAttribute(UserLevelType.Experienced)]
+        [ValueAccess(ValueAccessType.None, ValueAccessType.None)]
+        [DataMember(IsRequired = false, EmitDefaultValue = false)]
+        public int TransactionDelay
+        {
+            get;
+            set;
         }
 
 		/// <summary>

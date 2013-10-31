@@ -61,8 +61,7 @@ namespace Gurux.Device
 	{
         System.Diagnostics.TraceLevel m_Trace;
         bool Tracing = false;
-		IGXPacketHandler m_PacketHandler;
-		GXKeepalive m_Keepalive;
+		IGXPacketHandler m_PacketHandler;		
 		string m_Name;
 		int m_UpdateInterval = 0;
 		DeviceStates m_Status = DeviceStates.None;
@@ -81,9 +80,13 @@ namespace Gurux.Device
 		private GXTableCollection m_Tables = null;
 		private object m_sync;
 		private object m_transactionsync;
+        object TransactionObject;
+        int TransactionCount, TransactionPos;
 
 		[DataMember(Name = "ID", IsRequired = false, EmitDefaultValue = false)]
 		ulong m_ID;
+        
+        GXKeepalive m_Keepalive;
 
         /// <summary>
         /// Is device preset.
@@ -115,7 +118,7 @@ namespace Gurux.Device
 		/// </summary>        
 		public GXDevice()
 		{
-			Keepalive = new GXKeepalive();
+			Keepalive = new GXKeepalive(this);
 			m_Events = new GXEvents();
 			this.GXClient = new GXClient();
 			Categories = new GXCategoryCollection();
@@ -195,7 +198,7 @@ namespace Gurux.Device
 		/// </remarks>
 		protected override void OnDeserializing(bool designMode)
 		{
-			Keepalive = new GXKeepalive();
+			Keepalive = new GXKeepalive(this);
 			m_Events = new GXEvents();
 			this.GXClient = new GXClient();
 			Categories = new GXCategoryCollection();
@@ -339,24 +342,24 @@ namespace Gurux.Device
 		/// <summary>
 		/// Keepalive settings.
 		/// </summary>
-		[ValueAccess(ValueAccessType.None, ValueAccessType.None)]
-		[DataMember(IsRequired = true)]
-		[ReadOnly(true)]
-		public GXKeepalive Keepalive
-		{
-			get
-			{
-				return m_Keepalive;
-			}
-			set
-			{
-				m_Keepalive = value;
-				if (m_Keepalive != null)
-				{
-					m_Keepalive.Parent = this;
-				}
-			}
-		}
+        [TypeConverter(typeof(GXKeepaliveConverter))]
+        [DataMember(IsRequired = true)]        
+        [ValueAccess(ValueAccessType.Edit, ValueAccessType.None)]
+        virtual public GXKeepalive Keepalive
+        {
+            get
+            {
+                return m_Keepalive;
+            }            
+            set
+            {
+                m_Keepalive = value;
+                if (value != null)
+                {
+                    m_Keepalive.Parent = this;
+                }
+            }
+        }
 
 		/// <summary>
 		/// Object Identifier.
@@ -848,6 +851,20 @@ namespace Gurux.Device
 			WaitTime = -1
 		}
 
+        /// <summary>
+        /// TransactionDelay is the minimum transaction delay time, in milliseconds, between transactions.
+        /// </summary>
+        [System.ComponentModel.Category("Behavior"), System.ComponentModel.Description("TransactionDelay is the minimum transaction delay time, in milliseconds, between transactions."),        
+        DefaultValue(0)]
+        [GXUserLevelAttribute(UserLevelType.Experienced)]
+        [ValueAccess(ValueAccessType.None, ValueAccessType.None)]
+        [DataMember(IsRequired = false, EmitDefaultValue = false)]
+        virtual public int TransactionDelay
+        {
+            get;
+            set;
+        }
+
 		/// <summary>
 		/// Is device stored to the database.
 		/// </summary>
@@ -1049,6 +1066,8 @@ namespace Gurux.Device
 			{
                 DataContractSerializer x = new DataContractSerializer(deviceType, deviceType.Name, "", types.ToArray());
 				device = (GXDevice)x.ReadObject(reader);
+                //Update serializated target after load.
+                device.Keepalive.SerializedTarget = device.Keepalive.SerializedTarget;
 				reader.Close();
 			}
 			device.m_AddIn = addIn;
@@ -1785,9 +1804,6 @@ namespace Gurux.Device
 			}
 		}
 
-		object TransactionObject;
-		int TransactionCount, TransactionPos;
-
 		/// <summary>
 		/// Execute transaction.
 		/// </summary>
@@ -1813,6 +1829,7 @@ namespace Gurux.Device
 				{
 					return true;
 				}
+                int delay = 0;
 				GXProperty prop = null;
 				GXCategory cat = null;
 				GXTable table = null;
@@ -1821,6 +1838,12 @@ namespace Gurux.Device
 				{
 					prop = sender as GXProperty;
 					prop.NotifyPropertyChange(read ? PropertyStates.ReadStart : PropertyStates.WriteStart);
+                    delay = prop.TransactionDelay;
+                    //If device transaction delay is used.
+                    if (delay == -1)
+                    {
+                        delay = prop.Device.TransactionDelay;
+                    }
 				}
 				else if (sender is GXCategory)
 				{
@@ -1829,10 +1852,17 @@ namespace Gurux.Device
 				else if (sender is GXTable)
 				{
 					table = sender as GXTable;
+                    delay = table.TransactionDelay;
+                    //If device transaction delay is used.
+                    if (delay == -1)
+                    {
+                        delay = table.Device.TransactionDelay;
+                    }
 				}
 				else if (sender is GXDevice)
 				{
 					device = sender as GXDevice;
+                    delay = device.TransactionDelay;
 				}
 				DateTime start = DateTime.Now;
                 List<GXPacket> packets = new List<GXPacket>();
@@ -1853,19 +1883,8 @@ namespace Gurux.Device
                         {
                             packet.ResendCount = -1;
                         }
-                        if (ReserveMedia)
-                        {
-                            lock (client.SyncCommunication)
-                            {
-                                client.Send(packet, true);
-                            }
-                        }
-                        else
-                        {
-                            client.Send(packet, true);
-                        }
 
-                        Statistics.PacketSendTime = DateTime.Now;
+                        SendPacket(client, delay, packet);
                         if ((packet.Status & (PacketStates.Timeout | PacketStates.SendFailed)) != 0)
                         {
                             //If connection is closed.
@@ -1894,6 +1913,14 @@ namespace Gurux.Device
                         {
                             while (!this.PacketHandler.IsTransactionComplete(sender, att.IsAllSentMessageHandler, packet))
                             {
+                                if (Keepalive.TransactionResets)
+                                {
+                                    if (client.Trace >= System.Diagnostics.TraceLevel.Info)
+                                    {
+                                        Gurux.Common.GXCommon.TraceWriteLine(DateTime.Now.ToShortTimeString() + " Resets keepalive.");
+                                    }
+                                    Keepalive.Reset();
+                                }
                                 packet = client.CreatePacket();
                                 packets.Add(packet);
                                 this.PacketHandler.ExecuteSendCommand(sender, att.AcknowledgeMessageHandler, packet);
@@ -1902,18 +1929,7 @@ namespace Gurux.Device
                                 {
                                     throw new Exception("Invalid Acknowledge message: " + att.AcknowledgeMessageHandler + ".");
                                 }
-                                if (ReserveMedia)
-                                {
-                                    lock (client.SyncCommunication)
-                                    {
-                                        client.Send(packet, true);
-                                    }
-                                }
-                                else
-                                {
-                                    client.Send(packet, true);
-                                }
-                                Statistics.PacketSendTime = DateTime.Now;
+                                SendPacket(client, delay, packet);
                                 if ((packet.Status & (PacketStates.Timeout | PacketStates.SendFailed)) != 0)
                                 {
                                     //If connection is closed.
@@ -2309,6 +2325,48 @@ namespace Gurux.Device
 			return true;
 		}
 
+        private void SendPacket(GXClient client, int delay, GXPacket packet)
+        {
+            if (ReserveMedia)
+            {
+                lock (client.SyncCommunication)
+                {
+                    Statistics.PacketSendTime = DateTime.Now;
+                    if (delay > 0 && Statistics.PacketReceiveTime != DateTime.MinValue)
+                    {
+                        delay -= (int)(DateTime.Now - Statistics.PacketReceiveTime).TotalMilliseconds;
+                        if (delay > 0)
+                        {
+                            if (Tracing && m_OnTrace != null)
+                            {
+                                m_OnTrace(this, new TraceEventArgs(TraceTypes.Info, string.Format("Wait {0} ms. before next packet is send.", delay)));
+                            }
+                            System.Threading.Thread.Sleep(delay);
+                        }
+                    }
+                    client.Send(packet, true);
+                }
+            }
+            else
+            {
+                Statistics.PacketSendTime = DateTime.Now;
+                if (delay > 0 && Statistics.PacketReceiveTime != DateTime.MinValue)
+                {
+                    delay -= (int)(DateTime.Now - Statistics.PacketReceiveTime).TotalMilliseconds;
+                    if (delay > 0)
+                    {
+                        if (Tracing && m_OnTrace != null)
+                        {
+                            m_OnTrace(this, new TraceEventArgs(TraceTypes.Info, string.Format("Wait {0} ms. before next packet is send.", delay)));
+                        }
+                        System.Threading.Thread.Sleep(delay);
+                    }
+                }
+                client.Send(packet, true);
+            }
+            Statistics.PacketReceiveTime = DateTime.Now;            
+        }
+
 		/// <summary>
 		/// Find communication attributes.
 		/// </summary>
@@ -2587,14 +2645,34 @@ namespace Gurux.Device
 
 		internal void ExecuteInitialAction(InitialActionType type)
 		{
-			if (this.PacketHandler != null)
-			{
-				foreach (GXInitialActionMessage it in GetInitialCommunicationMessageAttributes(this, type))
-				{
-					TransactionObject = null;
-					Execute(this, this.GXClient, it, true, true);
-				}
-			}
+            if (Tracing && m_OnTrace != null)
+            {
+                m_OnTrace(this, new TraceEventArgs(TraceTypes.Info, type.ToString() + " started."));
+            }
+            //Wait until transaction is ended.
+            if (!System.Threading.Monitor.TryEnter(m_transactionsync, this.WaitTime))
+            {
+                throw new Exception("Transaction is already in progress.");
+            }
+            try
+            {
+                if (this.PacketHandler != null)
+                {
+                    foreach (GXInitialActionMessage it in GetInitialCommunicationMessageAttributes(this, type))
+                    {
+                        TransactionObject = null;
+                        Execute(this, this.GXClient, it, true, true);
+                    }
+                }
+            }
+            finally
+            {
+                System.Threading.Monitor.Exit(m_transactionsync);
+                if (Tracing && m_OnTrace != null)
+                {
+                    m_OnTrace(this, new TraceEventArgs(TraceTypes.Info, type.ToString() + " ended."));
+                }
+            }
 		}
 
 		///<summary>

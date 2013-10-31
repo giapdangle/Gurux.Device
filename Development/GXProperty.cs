@@ -413,12 +413,7 @@ namespace Gurux.Device
 		{
 			get;
 			set;
-		}
-
-		enum TransactionDelayEnum
-		{
-			UseDeviceValue = -1
-		}
+		}		
 
 		/// <summary>
 		/// TransactionDelay is the minimum transaction delay time, in milliseconds, between transactions.

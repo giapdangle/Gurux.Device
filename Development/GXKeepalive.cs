@@ -40,7 +40,7 @@ using Gurux.Device.Editor;
 using System.Threading;
 
 namespace Gurux.Device
-{
+{   
     /// <summary>
     /// This class adds Keepalive functionality to the device.
     /// </summary>
@@ -56,8 +56,9 @@ namespace Gurux.Device
         /// <summary>
         /// Internal constructor.
         /// </summary>
-        internal GXKeepalive()
+        internal GXKeepalive(GXDevice parent)
         {
+            Parent = parent;
             TransactionResets = true;
             m_Keepalive = new AutoResetEvent(false);
         }
@@ -68,7 +69,7 @@ namespace Gurux.Device
         /// <remarks>
         /// Do not use!.
         /// </remarks>
-        [DataMember(Order = 1, Name = "Init")]
+        [DataMember(Name = "Init")]
         private string Init
         {
             get
@@ -77,14 +78,27 @@ namespace Gurux.Device
             }
             set
             {
+                TransactionResets = true;
                 m_Keepalive = new AutoResetEvent(false);
             }
-        }     
+        }
+
+        /// <summary>
+        /// Ignored keepalive fields.
+        /// </summary>
+        [DataMember(Order = 1)]
+        [Browsable(false)]
+        public KeepaliveFieldsIgnored Ignore
+        {
+            get;
+            set;
+        }
 
         /// <summary>
         /// Keepalive interval in ms.
         /// </summary>
-        [DataMember(IsRequired = false, EmitDefaultValue = false)]
+        [Description("Keepalive interval in ms.")]
+        [DataMember(Order = 2, IsRequired = false, EmitDefaultValue = false)]
         [DefaultValue(0)]
         public int Interval
         {
@@ -93,12 +107,13 @@ namespace Gurux.Device
         }
 
         /// <summary>
-        /// Transaction resets keepalive.
+        /// Is transaction reseting keepalive.
         /// </summary>
         /// <remarks>
         /// This is a normal case.
         /// </remarks>
-        [DataMember(Name="Reset", IsRequired = false, EmitDefaultValue = false)]
+        [Description("Is transaction reseting keepalive.")]
+        [DataMember(Name="Reset", Order = 3, IsRequired = false, EmitDefaultValue = false)]
         [System.Xml.Serialization.XmlElement("Reset")]
         public bool TransactionResets
         {
@@ -109,11 +124,60 @@ namespace Gurux.Device
         /// <summary>
         /// Is keepalive running.
         /// </summary>
+        [Browsable(false)]
         public bool IsRunning
         {
             get
             {
+                if (m_Thread == null)
+                {
+                    return false;
+                }
                 return m_Thread.IsAlive;
+            }
+        }
+
+        /// <summary>
+        /// Target property to read.
+        /// </summary>
+        /// <remarks>
+        /// This can be used if there is no keepalive in protocol.
+        /// </remarks>
+        [Description("Target property to read.")]
+        [Editor(typeof(GXKeepaliveEditor), typeof(System.Drawing.Design.UITypeEditor))]        
+        public object Target
+        {
+            get;
+            set;
+        }
+
+        [DataMember(Name = "SerializedTarget", Order = 4, IsRequired = false, EmitDefaultValue = false)]
+        ulong m_SerializedTarget;
+
+        internal ulong SerializedTarget
+        {
+            get
+            {
+                return m_SerializedTarget;
+            }
+            set
+            {
+                if (value != 0)
+                {
+                    if (Parent != null)
+                    {
+                        Target = Parent.FindItemByID(value);
+                    }
+                    else
+                    {
+                        Target = null;
+                    }
+                }
+                else
+                {
+                    Target = null;
+                }
+                m_SerializedTarget = value;
             }
         }
 
@@ -121,7 +185,7 @@ namespace Gurux.Device
         /// Reset keepalive.
         /// </summary>
         public void Reset()
-        {
+        {            
             Reseting = true;
             m_Keepalive.Set();            
         }

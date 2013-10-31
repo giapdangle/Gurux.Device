@@ -100,6 +100,15 @@ namespace Gurux.Device
             internal set;
         }
 
+        /// <summary>
+        /// The time when a packet was last received.
+        /// </summary>
+        public DateTime PacketReceiveTime
+        {
+            get;
+            internal set;
+        }
+
 		/// <summary>
 		/// Properties read count.
 		/// </summary>

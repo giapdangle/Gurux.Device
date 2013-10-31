@@ -72,6 +72,8 @@
     <Compile Include="Editor\GXDataIOSourceDescriptor.cs" />
     <Compile Include="Editor\GXDataIOSourceEditor.cs" />
     <Compile Include="Editor\GXDataIOSourceTypeConverter.cs" />
+    <Compile Include="Editor\GXKeepaliveConverter.cs" />
+    <Compile Include="Editor\GXKeepaliveEditor.cs" />
     <Compile Include="Editor\GXObjectTypeConverter.cs" />
     <Compile Include="Editor\GXTableColumnEditor.cs" />
     <Compile Include="Editor\GXValueCollectionEditor.cs" />
@@ -81,6 +83,7 @@
     <Compile Include="Editor\GXZip.cs" />
     <Compile Include="Editor\IGXPartialRead.cs" />
     <Compile Include="Editor\PartialReadType.cs" />
+    <Compile Include="Editor\TransactionDelayEnum.cs" />
     <Compile Include="Editor\ValueAccessAttribute.cs" />
     <Compile Include="Editor\ValueAccessType.cs" />
     <Compile Include="GXCategoryStatistics.cs" />
@@ -128,6 +131,7 @@
     <Compile Include="Editor\GXNumberEnumeratorEditor.cs" />
     <Compile Include="GXDeviceList.cs" />
     <Compile Include="Editor\GXNoUITypeEditor.cs" />
+    <Compile Include="KeepaliveFieldsIgnored.cs" />
     <Compile Include="NamespaceDoc.cs" />
     <Compile Include="PresetDevices\DownloadState.cs" />
     <Compile Include="PresetDevices\GXDeviceManufacturer.cs" />
