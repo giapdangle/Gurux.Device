@@ -438,7 +438,8 @@ namespace Gurux.Device
         /// </remarks>
         [System.ComponentModel.Category("Design"), DefaultValue(null),
         System.ComponentModel.Description("The UI data type of the property, described in the template file.")]
-        [ValueAccess(ValueAccessType.None, ValueAccessType.None)]
+        [ValueAccess(ValueAccessType.Edit, ValueAccessType.None)]
+        [Editor(typeof(GXValueTypeEditor), typeof(System.Drawing.Design.UITypeEditor))]
         [System.Xml.Serialization.XmlIgnore()]
         virtual public Type ValueType
 		{

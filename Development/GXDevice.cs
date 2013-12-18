@@ -90,6 +90,30 @@ namespace Gurux.Device
         GXKeepalive m_Keepalive;
 
         /// <summary>
+        /// Determines if data importing from file is possible.
+        /// </summary>
+        [Browsable(false)]
+        public virtual bool ImportFromFileEnabled
+        {
+            get
+            {
+                return true;
+            }
+        }
+
+        /// <summary>
+        /// Gets or sets if importing of data is possible from a physical device.
+        /// </summary>
+        [Browsable(false)]
+        public virtual bool ImportFromDeviceEnabled
+        {
+            get
+            {
+                return true;
+            }
+        }
+
+        /// <summary>
         /// Is device preset.
         /// </summary>
         [Browsable(false)]

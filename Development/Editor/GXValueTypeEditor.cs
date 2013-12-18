@@ -32,6 +32,7 @@
 
 using System;
 using System.Drawing.Design;
+using System.Drawing;
 
 namespace Gurux.Device.Editor
 {
@@ -73,17 +74,29 @@ namespace Gurux.Device.Editor
             }
             // Create a CheckedListBox and populate it with all the propertylist values
             m_List = new System.Windows.Forms.ListBox();
+            m_List.DrawItem += new System.Windows.Forms.DrawItemEventHandler(OnDrawItem);
+            m_List.DrawMode = System.Windows.Forms.DrawMode.OwnerDrawFixed;
             m_List.BorderStyle = System.Windows.Forms.BorderStyle.None;
-            m_List.Items.Add(typeof(string));
-            m_List.Items.Add(typeof(DateTime));
-            m_List.Items.Add(typeof(byte));
-            m_List.Items.Add(typeof(UInt16));
-            m_List.Items.Add(typeof(UInt32));
-            m_List.Items.Add(typeof(UInt64));
-            m_List.Items.Add(typeof(sbyte));
-            m_List.Items.Add(typeof(Int16));
-            m_List.Items.Add(typeof(Int32));
-            m_List.Items.Add(typeof(Int64));
+            if (context.PropertyDescriptor.PropertyType == typeof(Type))
+            {
+                m_List.Items.Add(typeof(string));
+                m_List.Items.Add(typeof(DateTime));
+                m_List.Items.Add(typeof(byte));
+                m_List.Items.Add(typeof(UInt16));
+                m_List.Items.Add(typeof(UInt32));
+                m_List.Items.Add(typeof(UInt64));
+                m_List.Items.Add(typeof(sbyte));
+                m_List.Items.Add(typeof(Int16));
+                m_List.Items.Add(typeof(Int32));
+                m_List.Items.Add(typeof(Int64));
+            }
+            else
+            {
+                foreach(object it in Enum.GetValues(context.PropertyDescriptor.PropertyType))
+                {
+                    m_List.Items.Add(it);
+                }
+            }
             if (value != null)
             {
                 m_List.SelectedIndex = m_List.Items.IndexOf(value.ToString());
@@ -94,9 +107,32 @@ namespace Gurux.Device.Editor
             m_List.SelectedIndexChanged -= new System.EventHandler(this.OnSelectedIndexChanged);
             if (m_List.SelectedItem != null)
             {
-                return Type.GetType(m_List.SelectedItem.ToString());
+                return m_List.SelectedItem ;
             }
             return value;
+        }
+
+        void OnDrawItem(object sender, System.Windows.Forms.DrawItemEventArgs e)
+        {
+            e.DrawBackground();
+            // If the index is invalid then simply exit.
+            if (e.Index == -1)
+            {
+                return;
+            }
+            string str;
+            if (m_List.Items[e.Index] is Type)
+            {
+                str = (m_List.Items[e.Index] as Type).Name;
+            }
+            else
+            {
+                str = m_List.Items[e.Index].ToString();
+            }
+            using (Brush b = new SolidBrush(e.ForeColor))
+            {
+                e.Graphics.DrawString(str, e.Font, b, e.Bounds);
+            }
         }
 
         /// <summary>
