@@ -37,24 +37,24 @@ using System.Runtime.Serialization;
 
 namespace Gurux.Device.Editor
 {
-	/// <summary>
+    /// <summary>
     /// With GXSite class, component design time support is added.
-	/// </summary>
+    /// </summary>
     [ToolboxItem(false)]
     [System.Runtime.Serialization.DataContract()]
     public abstract class GXSite : IComponent
-	{
+    {
         [System.Xml.Serialization.XmlIgnore()]
-		private ISite m_Site = null;
-		/// <summary>
-		/// Keeps a list of items that need this component.
-		/// </summary>
+        private ISite m_Site = null;
+        /// <summary>
+        /// Keeps a list of items that need this component.
+        /// </summary>
         [System.Xml.Serialization.XmlIgnore()]
         private System.Collections.Hashtable m_DependencyList = new System.Collections.Hashtable();
 
-		/// <summary>
-		/// Reserved for inner use. Do not use.
-		/// </summary>
+        /// <summary>
+        /// Reserved for inner use. Do not use.
+        /// </summary>
         [ValueAccess(ValueAccessType.None, ValueAccessType.None)]
         [System.Xml.Serialization.XmlIgnore()]
         public System.Collections.Hashtable DependencyList
@@ -74,130 +74,130 @@ namespace Gurux.Device.Editor
             else
             {
                 OnDeserialized(m_Site != null);
-            }             
+            }
         }
 
-		/// <summary>
-		/// This is reserved to set default values in serializing in Linux because OnDeserializing do not work.
-		/// </summary>
-		/// <remarks>
-		/// Do not use!.
-		/// </remarks>
-		[DataMember(Name = "Init", IsRequired = false, EmitDefaultValue = true)]
-		protected string Init
-		{
-			get
-			{
+        /// <summary>
+        /// This is reserved to set default values in serializing in Linux because OnDeserializing do not work.
+        /// </summary>
+        /// <remarks>
+        /// Do not use!.
+        /// </remarks>
+        [DataMember(Name = "Init", IsRequired = false, EmitDefaultValue = true)]
+        protected string Init
+        {
+            get
+            {
                 OnSerializing(m_Site != null);
-				return "";
-			}
-			set
-			{
+                return "";
+            }
+            set
+            {
                 OnDeserializing(m_Site != null);
-			}
-		}
-		
-		/// <summary>
-		/// Override this to made changes before device save.
-		/// </summary>
+            }
+        }
+
+        /// <summary>
+        /// Override this to made changes before device save.
+        /// </summary>
         protected virtual void OnSerializing(bool designMode)
-		{			
-		}
+        {
+        }
 
-		/// <summary>
-		/// Override this to made changes before device load.
-		/// </summary>
+        /// <summary>
+        /// Override this to made changes before device load.
+        /// </summary>
         protected virtual void OnDeserializing(bool designMode)
-		{			
-		}
-		
-		/// <summary>
-		/// Override this to made changes after device save.
-		/// </summary>
-        protected virtual void OnSerialized(bool designMode)
-		{			
-		}
+        {
+        }
 
-		/// <summary>
-		/// Override this to made changes after device load.
-		/// </summary>
-		protected virtual void OnDeserialized(bool designMode)
-		{			
-		}
-		
-		#region IComponent Members
-		System.EventHandler m_Disposed;
+        /// <summary>
+        /// Override this to made changes after device save.
+        /// </summary>
+        protected virtual void OnSerialized(bool designMode)
+        {
+        }
+
+        /// <summary>
+        /// Override this to made changes after device load.
+        /// </summary>
+        protected virtual void OnDeserialized(bool designMode)
+        {
+        }
+
+        #region IComponent Members
+        System.EventHandler m_Disposed;
 
         /// <summary> 
         /// Occurs when the component is disposed by a call to the Dispose method.
         /// </summary>
-		public event System.EventHandler Disposed
-		{
-			add
-			{
-				m_Disposed += value;
-			}
-			remove
-			{
-				m_Disposed -= value;
-			}
-		}
+        public event System.EventHandler Disposed
+        {
+            add
+            {
+                m_Disposed += value;
+            }
+            remove
+            {
+                m_Disposed -= value;
+            }
+        }
 
-		/// <summary>
+        /// <summary>
         /// Gets or sets the ISite of the Component.
-		/// </summary>
+        /// </summary>
         [ValueAccess(ValueAccessType.None, ValueAccessType.None)]
         [Browsable(false)]
         [System.Xml.Serialization.XmlIgnore()]
         public ISite Site
-		{
-			get
-			{
-				return m_Site;
-			}
-			set
-			{
-				m_Site = value;
-			}
-		}
+        {
+            get
+            {
+                return m_Site;
+            }
+            set
+            {
+                m_Site = value;
+            }
+        }
 
-		/// <summary>
-		/// Notifies, when the value of an object changes.
-		/// </summary>
-		/// <param name="comp">The object.</param>
-		/// <param name="name">Name of the object.</param>
-		/// <param name="oldValue">Previous value of the object.</param>
-		/// <param name="newValue">Changed value of the object.</param>
-		internal void NotifyChange(object comp, string name, object oldValue, object newValue)
-		{
-			if (m_Site != null)
-			{
-				System.ComponentModel.Design.IComponentChangeService ccsChanger = (System.ComponentModel.Design.IComponentChangeService)m_Site.GetService(typeof(System.ComponentModel.Design.IComponentChangeService));
-				if (ccsChanger != null)
-				{
-					MemberDescriptor md = TypeDescriptor.GetProperties(comp).Find(name, true);
-					if (md == null) //MemberDescriptor might be null in beginner user mode.
-					{
-						System.Diagnostics.Debug.WriteLine(string.Format("GXSite NotifyChange failed. Propertys '{0}' name '{1}' is unknown", m_Site.Name, name));
-						return;
-					}
-					ccsChanger.OnComponentChanging(m_Site.Component, md);
-					ccsChanger.OnComponentChanged(m_Site.Component, md, oldValue, newValue);
-				}
-			}
-		}
+        /// <summary>
+        /// Notifies, when the value of an object changes.
+        /// </summary>
+        /// <param name="comp">The object.</param>
+        /// <param name="name">Name of the object.</param>
+        /// <param name="oldValue">Previous value of the object.</param>
+        /// <param name="newValue">Changed value of the object.</param>
+        internal void NotifyChange(object comp, string name, object oldValue, object newValue)
+        {
+            if (m_Site != null)
+            {
+                System.ComponentModel.Design.IComponentChangeService ccsChanger = (System.ComponentModel.Design.IComponentChangeService)m_Site.GetService(typeof(System.ComponentModel.Design.IComponentChangeService));
+                if (ccsChanger != null)
+                {
+                    MemberDescriptor md = TypeDescriptor.GetProperties(comp).Find(name, true);
+                    if (md == null) //MemberDescriptor might be null in beginner user mode.
+                    {
+                        System.Diagnostics.Debug.WriteLine(string.Format("GXSite NotifyChange failed. Propertys '{0}' name '{1}' is unknown", m_Site.Name, name));
+                        return;
+                    }
+                    ccsChanger.OnComponentChanging(m_Site.Component, md);
+                    ccsChanger.OnComponentChanged(m_Site.Component, md, oldValue, newValue);
+                }
+            }
+        }
 
-		#endregion
+        #endregion
 
-		#region IDisposable Members
+        #region IDisposable Members
 
         /// <summary> 
         /// Cleans up any resources being used.
         /// </summary>
-		public virtual void Dispose()
-		{
-		}
+        public virtual void Dispose()
+        {
+        }
 
-		#endregion
-	}
+        #endregion
+    }
 }

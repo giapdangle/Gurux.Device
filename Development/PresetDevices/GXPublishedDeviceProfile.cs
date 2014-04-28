@@ -1,6 +1,7 @@
 ﻿using System.Runtime.Serialization;
 using System.ComponentModel;
 using System.Xml.Serialization;
+using System;
 
 namespace Gurux.Device.PresetDevices
 {
@@ -8,38 +9,40 @@ namespace Gurux.Device.PresetDevices
     /// Published device type and data.
     /// </summary>
     [DataContract()]
-    public class GXPublishedDeviceType : GXDeviceType
+    [Serializable]
+    public class GXPublishedDeviceProfile : GXDeviceProfile
     {
-        GXTemplateVersionCollection m_Versions;
+        [NonSerialized]
+        GXDeviceProfileVersionCollection m_Versions;
 
         /// <summary>
         /// Constructor.
         /// </summary>
-        public GXPublishedDeviceType()
+        public GXPublishedDeviceProfile()
         {
-            m_Versions = new GXTemplateVersionCollection(this);
+            m_Versions = new GXDeviceProfileVersionCollection(this);
             this.Guid = System.Guid.NewGuid();
         }
 
         /// <summary>
         /// Copy constructor.
         /// </summary>
-        public GXPublishedDeviceType(GXDeviceType type)
+        public GXPublishedDeviceProfile(GXDeviceProfile type)
         {
             Protocol = type.Protocol;
             Name = type.Name;
             PresetName = type.PresetName;
             Description = type.Description;
-            Versions = new GXTemplateVersionCollection(this);
-            GXPublishedDeviceType tmp = type as GXPublishedDeviceType;
+            Versions = new GXDeviceProfileVersionCollection(this);
+            GXPublishedDeviceProfile tmp = type as GXPublishedDeviceProfile;
             if (tmp != null)
             {
                 if (tmp.Versions != null)
                 {
-                    Versions = new GXTemplateVersionCollection(this);
-                    foreach (GXTemplateVersion it in tmp.Versions)
+                    Versions = new GXDeviceProfileVersionCollection(this);
+                    foreach (GXDeviceProfileVersion it in tmp.Versions)
                     {
-                        Versions.Add(new GXTemplateVersion(it));
+                        Versions.Add(new GXDeviceProfileVersion(it));
                     }
                 }
                 this.Guid = tmp.Guid;
@@ -62,20 +65,10 @@ namespace Gurux.Device.PresetDevices
         }
 
         /// <summary>
-        /// Device Guid.
-        /// </summary>
-        [DataMember(IsRequired = false, EmitDefaultValue = false)]
-        public System.Guid DeviceGuid
-        {
-            get;
-            set;
-        }  
-
-        /// <summary>
         /// Returns device type parent collection.
         /// </summary>
         [XmlIgnore()]
-        new public GXPublishedDeviceTypeCollection Parent
+        new public GXPublishedDeviceProfileCollection Parent
         {
             get;
             internal set;
@@ -90,9 +83,9 @@ namespace Gurux.Device.PresetDevices
             {
                 if (Status == DownloadStates.Add)
                 {
-                    return GXDevice.GetDeviceTemplatePath(Protocol, Name);
+                    return GXDevice.GetDeviceProfilesPath(Protocol, DeviceGuid);
                 }
-                return GXDevice.GetDeviceTemplatePath(DeviceGuid);
+                return GXDevice.GetDeviceProfilesPath(DeviceGuid);
             }
         }     
 
@@ -113,7 +106,7 @@ namespace Gurux.Device.PresetDevices
         [DefaultValue(null)]
         [DataMember(IsRequired = false, EmitDefaultValue = false)]
         [DesignerSerializationVisibility(DesignerSerializationVisibility.Content)]
-        public GXTemplateVersionCollection Versions
+        public GXDeviceProfileVersionCollection Versions
         {
             get
             {

@@ -6,6 +6,7 @@ using System.Xml;
 using Gurux.Common;
 using System.Runtime.Serialization;
 using Gurux.Device.Editor;
+using Gurux.Device.Properties;
 
 namespace Gurux.Device.PresetDevices
 {
@@ -118,17 +119,17 @@ namespace Gurux.Device.PresetDevices
             {
                 name = (target as GXDeviceVersion).Name;
             }
-            else if (target is GXPublishedDeviceType)
+            else if (target is GXPublishedDeviceProfile)
             {
-                guid = (target as GXPublishedDeviceType).Guid;
+                guid = (target as GXPublishedDeviceProfile).Guid;
             }
-            else if (target is GXTemplateVersion)
+            else if (target is GXDeviceProfileVersion)
             {
-                guid = (target as GXTemplateVersion).Guid;
+                guid = (target as GXDeviceProfileVersion).Guid;
             }
             else
             {
-                throw new Exception("Unknown target.");
+                throw new Exception(Resources.UnknownTarget);
             }
 
             foreach (GXDeviceManufacturer man in m_List)
@@ -149,13 +150,13 @@ namespace Gurux.Device.PresetDevices
                         {
                             return dv;
                         }
-                        foreach (GXPublishedDeviceType dt in dv.Templates)
+                        foreach (GXPublishedDeviceProfile dt in dv.Templates)
                         {
                             if (guid == dt.Guid)
                             {
                                 return dt;
                             }
-                            foreach (GXTemplateVersion tv in dt.Versions)
+                            foreach (GXDeviceProfileVersion tv in dt.Versions)
                             {
                                 if (guid == tv.Guid)
                                 {
@@ -178,7 +179,7 @@ namespace Gurux.Device.PresetDevices
         /// <param name="deviceVersion">Device version.</param>
         /// <param name="presetName">Preset name.</param>
         /// <returns>Found GXDeviceType or null if not found.</returns>
-        public GXDeviceType Find(string manufacturer, string model, string deviceVersion, string presetName)
+        public GXDeviceProfile Find(string manufacturer, string model, string deviceVersion, string presetName)
         {
             GXDeviceManufacturer man = Find(manufacturer);
             if (man == null)
@@ -206,9 +207,9 @@ namespace Gurux.Device.PresetDevices
         /// <param name="deviceVersion">Device version.</param>
         /// <param name="presetName">Preset name.</param>
         /// <returns>Found GXTemplateVersion or null if not found.</returns>
-        public GXTemplateVersion Find(string manufacturer, string model, string deviceVersion, string presetName, int version)
+        public GXDeviceProfileVersion Find(string manufacturer, string model, string deviceVersion, string presetName, int version)
         {
-            GXPublishedDeviceType type = Find(manufacturer, model, deviceVersion, presetName) as GXPublishedDeviceType;
+            GXPublishedDeviceProfile type = Find(manufacturer, model, deviceVersion, presetName) as GXPublishedDeviceProfile;
             if (type != null)
             {
                 return type.Versions.Find(version);
@@ -292,7 +293,7 @@ namespace Gurux.Device.PresetDevices
             Manufacturers.Clear();
             if (File.Exists(path) && new FileInfo(path).Length != 0)
             {
-                Type[] extraTypes = new Type[] { typeof(GXDeviceManufacturerCollection), typeof(GXDeviceManufacturer), typeof(GXDeviceModelCollection), typeof(GXDeviceModel), typeof(GXDeviceVersionCollection), typeof(GXPublishedDeviceType) };
+                Type[] extraTypes = new Type[] { typeof(GXDeviceManufacturerCollection), typeof(GXDeviceManufacturer), typeof(GXDeviceModelCollection), typeof(GXDeviceModel), typeof(GXDeviceVersionCollection), typeof(GXPublishedDeviceProfile) };
                 DataContractSerializer x = new DataContractSerializer(typeof(GXDeviceManufacturerCollection), extraTypes);
                 lock (Manufacturers)
                 {
@@ -334,7 +335,7 @@ namespace Gurux.Device.PresetDevices
                 {
                     Directory.CreateDirectory(Path.GetDirectoryName(path));
                 }
-                Type[] extraTypes = new Type[] { typeof(GXDeviceManufacturerCollection), typeof(GXDeviceManufacturer), typeof(GXDeviceModelCollection), typeof(GXDeviceModel), typeof(GXDeviceVersionCollection), typeof(GXPublishedDeviceType) };
+                Type[] extraTypes = new Type[] { typeof(GXDeviceManufacturerCollection), typeof(GXDeviceManufacturer), typeof(GXDeviceModelCollection), typeof(GXDeviceModel), typeof(GXDeviceVersionCollection), typeof(GXPublishedDeviceProfile) };
                 DataContractSerializer x = new DataContractSerializer(typeof(GXDeviceManufacturerCollection), extraTypes);
                 XmlWriterSettings settings = new XmlWriterSettings();
                 settings.Indent = true;
@@ -384,9 +385,9 @@ namespace Gurux.Device.PresetDevices
                 {
                     foreach (GXDeviceVersion ver in mod.Versions)
                     {
-                        foreach (GXPublishedDeviceType type in ver.Templates)
+                        foreach (GXPublishedDeviceProfile type in ver.Templates)
                         {
-                            foreach (GXTemplateVersion tv in type.Versions)
+                            foreach (GXDeviceProfileVersion tv in type.Versions)
                             {
                                 if (tv.Date > dt)
                                 {
@@ -411,14 +412,14 @@ namespace Gurux.Device.PresetDevices
                                         ver2.Templates.Clear();
                                         mod2.Versions.Add(ver2);
                                     }
-                                    GXPublishedDeviceType type2 = ver2.Templates.Find(type);
+                                    GXPublishedDeviceProfile type2 = ver2.Templates.Find(type);
                                     if (type2 == null)
                                     {
-                                        type2 = new GXPublishedDeviceType(type);
+                                        type2 = new GXPublishedDeviceProfile(type);
                                         type2.Versions.Clear();
                                         ver2.Templates.Add(type2);
                                     }
-                                    type2.Versions.Add(new GXTemplateVersion(tv));
+                                    type2.Versions.Add(new GXDeviceProfileVersion(tv));
                                 }
                             }
                         }

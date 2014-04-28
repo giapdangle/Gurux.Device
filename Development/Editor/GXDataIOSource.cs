@@ -36,6 +36,7 @@ using System.Text;
 using System.ComponentModel;
 using System.Globalization;
 using System.Drawing.Design;
+using Gurux.Device.Properties;
 
 namespace Gurux.Device.Editor
 {
@@ -157,7 +158,7 @@ namespace Gurux.Device.Editor
 				GXDataIOSourceAttribute att = (GXDataIOSourceAttribute)TypeDescriptor.GetAttributes(this.Parent)[typeof(GXDataIOSourceAttribute)];
 				if (att == null || !att.DataIOSourceCanBeUnknown)
 				{
-					tasks.Add(new GXTask(Parent, "DataIOSource", "DataIOSource target is unknown."));
+					tasks.Add(new GXTask(Parent, "DataIOSource", Resources.DataIOSourceTargetIsUnknown));
 				}
 			}
 		}
@@ -230,7 +231,7 @@ namespace Gurux.Device.Editor
 		{
 			if (Target is GXDevice)
 			{
-				return ((GXDevice)Target).DeviceType;
+				return ((GXDevice)Target).DeviceProfile;
 			}
 			else if (Target is GXCategory)
 			{
@@ -252,7 +253,7 @@ namespace Gurux.Device.Editor
 			{
 				return ((GXDeviceGroup)Target).Name;
 			}
-			return "Empty";
+			return Resources.Empty;
 		}
 
 		/// <summary>
@@ -365,9 +366,9 @@ namespace Gurux.Device.Editor
 					case GXDevice.AvailableTargets.Name:
 						return device.Name;
 					case GXDevice.AvailableTargets.DeviceType:
-						return device.DeviceType;
+						return device.DeviceProfile;
 					case GXDevice.AvailableTargets.ProtocolName:
-						return device.DeviceType;
+						return device.DeviceProfile;
 					case GXDevice.AvailableTargets.UpdateInterval:
 						return device.UpdateInterval.ToString();
 					case GXDevice.AvailableTargets.ResendWaitTime:

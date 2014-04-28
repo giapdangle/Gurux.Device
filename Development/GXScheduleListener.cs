@@ -42,7 +42,7 @@ namespace Gurux.Device
 	/// <summary>
 	/// Quartz job listener for running schedules.
 	/// </summary>
-    public class GXScheduleListener : IJobListener
+    class GXScheduleListener : IJobListener
     {
 
         #region IJobListener Members
@@ -61,56 +61,59 @@ namespace Gurux.Device
 		/// <summary>
 		/// Not in use.
 		/// </summary>
-        public void JobToBeExecuted(JobExecutionContext context)
+        public void JobToBeExecuted(IJobExecutionContext context)
         {
         }
 
 		/// <summary>
 		/// Not in use.
 		/// </summary>
-        public void JobExecutionVetoed(JobExecutionContext context)
+        public void JobExecutionVetoed(IJobExecutionContext context)
         {
         }
 
 		/// <summary>
 		/// Handles operations related to finished schedule fire such as statistics and next time of firing.
 		/// </summary>
-        public void JobWasExecuted(JobExecutionContext context, JobExecutionException jobException)
+        public void JobWasExecuted(IJobExecutionContext context, JobExecutionException jobException)
         {
-            GXSchedule schedule = null;
-            try
+            if (context.JobInstance is GXScheduleJob)
             {
-                schedule = context.JobDetail.JobDataMap["Target"] as GXSchedule;
-                schedule.Statistics.LastRunTime = DateTime.Now;
-                if (jobException == null)
+                GXSchedule schedule = null;
+                try
                 {
-                    ++schedule.Statistics.RunCount;
-                }
-                else
-                {
-                    ++schedule.Statistics.RunFailCount;
-                    if (schedule != null)
+                    schedule = context.JobDetail.JobDataMap["Target"] as GXSchedule;
+                    schedule.Statistics.LastRunTime = DateTime.Now;
+                    if (jobException == null)
                     {
-                        schedule.Parent.Parent.NotifyError(schedule, jobException.GetBaseException());
+                        ++schedule.Statistics.RunCount;
+                    }
+                    else
+                    {
+                        ++schedule.Statistics.RunFailCount;
+                        if (schedule != null)
+                        {
+                            schedule.Parent.Parent.NotifyError(schedule, jobException.GetBaseException());
+                        }
+                    }
+                    //If this is last execution time.
+                    if (context.NextFireTimeUtc == null)
+                    {
+                        if (schedule != null)
+                        {
+                            schedule.Statistics.EndTime = DateTime.Now;
+                            schedule.Status &= ~ScheduleState.Run;
+                            schedule.NotifyChange(ScheduleState.End);
+                            context.Scheduler.DeleteJob(new JobKey(schedule.Name + schedule.ID.ToString(), schedule.Name + schedule.ID.ToString()));
+                        }
                     }
                 }
-                //If this is last execution time.
-                if (context.NextFireTimeUtc == null)
+                catch (Exception Ex)
                 {
                     if (schedule != null)
                     {
-                        schedule.Statistics.EndTime = DateTime.Now;
-                        schedule.Status &= ~ScheduleState.Run;
-                        schedule.NotifyChange(ScheduleState.End);
-                        context.Scheduler.DeleteJob(schedule.Name + schedule.ID.ToString(), schedule.Name + schedule.ID.ToString());
+                        schedule.Parent.Parent.NotifyError(schedule, Ex);
                     }
-                }
-            }
-            catch (Exception Ex)
-            {
-                if (schedule != null)
-                {
-                    schedule.Parent.Parent.NotifyError(schedule, Ex);
                 }
             }
         }

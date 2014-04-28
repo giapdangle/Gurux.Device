@@ -36,6 +36,7 @@ using System.Linq;
 using System.Text;
 using Gurux.Device.Editor;
 using System.ComponentModel;
+using Gurux.Device.Properties;
 
 namespace Gurux.Device
 {
@@ -70,7 +71,7 @@ namespace Gurux.Device
                 string data = "";
                 if (((GXMediaTypeCollection)value).Count == 0)
                 {
-                    return "All Medias";
+                    return Resources.AllMedias;
                 }
                 foreach (GXMediaType type in ((GXMediaTypeCollection)value))
                 {

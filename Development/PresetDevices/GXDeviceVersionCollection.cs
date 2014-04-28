@@ -12,6 +12,7 @@ namespace Gurux.Device.PresetDevices
     /// List of device versions.
     /// </summary>
     [CollectionDataContract()]
+    [Serializable]
     public class GXDeviceVersionCollection : GenericList<GXDeviceVersion>
     {
         /// <summary>

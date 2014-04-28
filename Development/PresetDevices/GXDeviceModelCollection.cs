@@ -13,7 +13,8 @@ namespace Gurux.Device.PresetDevices
     /// List of device models
     /// </summary>
     [CollectionDataContract()]
-        public class GXDeviceModelCollection : GenericList<GXDeviceModel>
+    [Serializable]
+    public class GXDeviceModelCollection : GenericList<GXDeviceModel>
     {
         /// <summary>
         /// Constructor.

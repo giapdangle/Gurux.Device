@@ -35,6 +35,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using Gurux.Device.Editor;
+using Gurux.Device.Properties;
 
 namespace Gurux.Device
 {
@@ -81,7 +82,7 @@ namespace Gurux.Device
                 {
                     return string.Empty;
                 }
-                return List[Index].Name + "Media properties";
+                return List[Index].Name + Resources.MediaProperties;
             }
         }
 

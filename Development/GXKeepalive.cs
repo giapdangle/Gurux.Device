@@ -185,9 +185,12 @@ namespace Gurux.Device
         /// Reset keepalive.
         /// </summary>
         public void Reset()
-        {            
-            Reseting = true;
-            m_Keepalive.Set();            
+        {
+            if (m_Keepalive != null)
+            {
+                Reseting = true;
+                m_Keepalive.Set();
+            }
         }
 
         /// <summary>

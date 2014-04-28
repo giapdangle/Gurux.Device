@@ -40,35 +40,35 @@ using Quartz;
 namespace Gurux.Device
 {
     class GXMonitorJob : IJob
-    {        
-        public virtual void Execute(JobExecutionContext context)
+    {
+        public virtual void Execute(IJobExecutionContext context)
         {
+            System.Diagnostics.Debug.WriteLine("GXMonitorJob.Execute");
             GXDevice device = null;
             try
             {
                 device = context.JobDetail.JobDataMap["Target"] as GXDevice;
+                bool canRead;
+                lock (device.SyncRoot)
+                {
+                    canRead = (device.Status & (DeviceStates.Reading | DeviceStates.Writing | DeviceStates.Disconnecting)) == 0 && 
+                        (device.Status & DeviceStates.Connected) != 0;
+                }
                 //Do work if device is connected and there is no read ongoing.
-                if (device != null &&
-                    (device.Status & (DeviceStates.Reading | DeviceStates.Writing)) == 0 &&
-                    (device.Status & DeviceStates.Connected) != 0)
+                if (canRead)
                 {
                     device.Read();
-                }
-                else //Is reading is already in progres.
-                {
-                    device = null;
-                }
+                }                    
             }
-            catch (Exception Ex)
+            catch (Exception ex)
             {
-                JobExecutionException ex = new JobExecutionException(Ex);
-                throw ex;
-            }
-            finally
-            {
-                if (device != null)
+                try
                 {
-
+                    device.NotifyError(device, ex);                
+                }
+                catch (Exception Ex)
+                {
+                    System.Diagnostics.Debug.WriteLine(Ex.Message);
                 }
             }
         }

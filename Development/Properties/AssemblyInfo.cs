@@ -42,7 +42,7 @@ using System.Runtime.InteropServices;
 [assembly: AssemblyConfiguration("")]
 [assembly: AssemblyCompany("Gurux Ltd")]
 [assembly: AssemblyProduct("Gurux.Device")]
-[assembly: AssemblyCopyright("Copyright (c) 1998-2013 Gurux Ltd. All rights reserved.")]
+[assembly: AssemblyCopyright("Copyright (c) 1998-2014 Gurux Ltd. All rights reserved.")]
 [assembly: AssemblyTrademark("")]
 [assembly: AssemblyCulture("")]
 
@@ -55,6 +55,5 @@ using System.Runtime.InteropServices;
 [assembly: Guid("1b2771cc-d730-4997-8c95-9b6a3d6718cc")]
 
 [assembly: AssemblyVersion("7.0.2.1")] //DO NOT CHANGE!
-[assembly: AssemblyFileVersion("7.0.14.1")]
-[assembly: System.Runtime.CompilerServices.InternalsVisibleTo("Gurux.DeviceUICtrls, PublicKey=0024000004800000940000000602000000240000525341310004000001000100a16866c091857912807031cc14bb1b4e20b4156713035ec038729418c81087337124f581eebddad0d06209c4d5b29da91203e2b461cd72a34620de3724c44fdaa331839f9695101e7b4a12b1615881e5ec164b175954d868a367c3e999871fa99fa225ba98ebb956f93205cd1a18a8718ac9701b26e75205c88a180403591aae")]
+[assembly: AssemblyFileVersion("7.1.3.1")]
 [assembly: System.Resources.NeutralResourcesLanguage("en")]

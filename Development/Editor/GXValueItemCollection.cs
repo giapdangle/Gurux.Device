@@ -34,6 +34,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using Gurux.Device.Properties;
 
 namespace Gurux.Device.Editor
 {
@@ -57,7 +58,7 @@ namespace Gurux.Device.Editor
             }
             if (!forcePresetValues)
             {
-                throw new Exception("Invalid value. Forced preset value not found.");
+                throw new Exception(Resources.InvalidValueForcedPresetValueNotFound);
             }
             return value;
         }
@@ -77,7 +78,7 @@ namespace Gurux.Device.Editor
             }
             if (!forcePresetValues)
             {
-                throw new Exception("Invalid value. Forced preset value not found.");
+                throw new Exception(Resources.InvalidValueForcedPresetValueNotFound);
             }
             return value;
         }
@@ -97,7 +98,7 @@ namespace Gurux.Device.Editor
             }
             if (!forcePresetValues)
             {
-                throw new Exception("Invalid value. Forced preset value not found.");
+                throw new Exception(Resources.InvalidValueForcedPresetValueNotFound);
             }
             return null;
         }
@@ -117,7 +118,7 @@ namespace Gurux.Device.Editor
             }
             if (!forcePresetValues)
             {
-                throw new Exception("Invalid value. Forced preset value not found.");
+                throw new Exception(Resources.InvalidValueForcedPresetValueNotFound);
             }
             return null;
         }

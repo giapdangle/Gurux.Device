@@ -1,6 +1,7 @@
 ﻿using System.Runtime.Serialization;
 using System.Xml.Serialization;
 using System.ComponentModel;
+using System;
 
 namespace Gurux.Device.PresetDevices
 {
@@ -8,6 +9,7 @@ namespace Gurux.Device.PresetDevices
     /// Device manufacturer.
     /// </summary>
     [DataContract()]
+    [Serializable]
     public class GXDeviceManufacturer
     {
         GXDeviceModelCollection m_Models;

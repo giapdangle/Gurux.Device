@@ -117,4 +117,187 @@
   <resheader name="writer">
     <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
+  <data name="Ended" xml:space="preserve">
+    <value> ended.</value>
+  </data>
+  <data name="TransactionIsAlreadyInProgress" xml:space="preserve">
+    <value>Transaction is already in progress.</value>
+  </data>
+  <data name="Started" xml:space="preserve">
+    <value> started.</value>
+  </data>
+  <data name="ItSIndexAlreadyExistsIn" xml:space="preserve">
+    <value>. It's Index already exists in </value>
+  </data>
+  <data name="FailedToExecute" xml:space="preserve">
+    <value>Failed to execute </value>
+  </data>
+  <data name="ItAlreadyExists" xml:space="preserve">
+    <value>. It already exists.</value>
+  </data>
+  <data name="Wait0MsBeforeNextPacketIsSend" xml:space="preserve">
+    <value>Wait {0} ms. before next packet is send.</value>
+  </data>
+  <data name="_0ReadFailed1" xml:space="preserve">
+    <value>{0} Read failed.
+{1}</value>
+  </data>
+  <data name="SendFailed" xml:space="preserve">
+    <value>Send failed.</value>
+  </data>
+  <data name="TimeoutOccurred" xml:space="preserve">
+    <value>Timeout occurred.</value>
+  </data>
+  <data name="InvalidAcknowledgeMessage" xml:space="preserve">
+    <value>Invalid Acknowledge message: </value>
+  </data>
+  <data name="ParentlessDeviceMonitoringIsNotAllowed" xml:space="preserve">
+    <value>Parentless device monitoring is not allowed.</value>
+  </data>
+  <data name="UpdateIntervalIsNotSet" xml:space="preserve">
+    <value>Update interval is not set.</value>
+  </data>
+  <data name="InvalidMediaState" xml:space="preserve">
+    <value>Invalid media state.</value>
+  </data>
+  <data name="FailedToLoadAddIn01" xml:space="preserve">
+    <value>Failed to load Add-In '{0}'
+{1}</value>
+  </data>
+  <data name="InvalidProtocolAddIn" xml:space="preserve">
+    <value>Invalid protocol AddIn </value>
+  </data>
+  <data name="ParentlessScheduleCanTBeActivated" xml:space="preserve">
+    <value>Parentless schedule can't be activated.</value>
+  </data>
+  <data name="FailedToLoadFile" xml:space="preserve">
+    <value>Failed to Load file: </value>
+  </data>
+  <data name="InvalidValueForceedPresetValueNotFound" xml:space="preserve">
+    <value>Invalid value. Forceed preset value not found.</value>
+  </data>
+  <data name="InvalidStartType" xml:space="preserve">
+    <value>Invalid start type.</value>
+  </data>
+  <data name="EntryReadTypeIsInvalid" xml:space="preserve">
+    <value>Entry read type is invalid.</value>
+  </data>
+  <data name="InvalidParent" xml:space="preserve">
+    <value>Invalid parent.</value>
+  </data>
+  <data name="TableNameIsUnknown" xml:space="preserve">
+    <value>Table name is unknown.</value>
+  </data>
+  <data name="Name" xml:space="preserve">
+    <value>Name</value>
+  </data>
+  <data name="TableNameCanTBeEmpty" xml:space="preserve">
+    <value>Table name can't be empty.</value>
+  </data>
+  <data name="VersionComparisationFailed" xml:space="preserve">
+    <value>Version comparisation failed:
+</value>
+  </data>
+  <data name="UnknownDeviceProfile" xml:space="preserve">
+    <value>Unknown device profile</value>
+  </data>
+  <data name="DeviceTypeIsNotPreset" xml:space="preserve">
+    <value>Device type is not preset.</value>
+  </data>
+  <data name="NoProtocolsFound" xml:space="preserve">
+    <value>No Protocols Found.</value>
+  </data>
+  <data name="InvalidPacketHandlerType" xml:space="preserve">
+    <value>Invalid PacketHandlerType.</value>
+  </data>
+  <data name="InvalidGXCommunicationAttribute" xml:space="preserve">
+    <value>Invalid GXCommunicationAttribute.</value>
+  </data>
+  <data name="CategoryNameIsUnknown" xml:space="preserve">
+    <value>Category name is unknown.</value>
+  </data>
+  <data name="UnknownDataInExportedFile0" xml:space="preserve">
+    <value>Unknown data in exported file. {0}</value>
+  </data>
+  <data name="ScheduleEnded" xml:space="preserve">
+    <value> Schedule ended.</value>
+  </data>
+  <data name="PropertyNameIsUnknown" xml:space="preserve">
+    <value>Property Name is unknown.</value>
+  </data>
+  <data name="TheNameOfTheCategoryCanTBeEmpty" xml:space="preserve">
+    <value>The name of the category can't be empty.</value>
+  </data>
+  <data name="FiledToValidateTable" xml:space="preserve">
+    <value>Filed to validate table </value>
+  </data>
+  <data name="DeviceInstallationFailed" xml:space="preserve">
+    <value>Device installation failed</value>
+  </data>
+  <data name="DoYouWantToReplaceExistingDevice" xml:space="preserve">
+    <value>Do you want to replace existing device?</value>
+  </data>
+  <data name="All" xml:space="preserve">
+    <value>All</value>
+  </data>
+  <data name="FindItemByIDFailedSearchIDCanTBeZero" xml:space="preserve">
+    <value>FindItemByID failed. Search ID can't be Zero.</value>
+  </data>
+  <data name="Empty" xml:space="preserve">
+    <value>Empty</value>
+  </data>
+  <data name="PropertyNameCanTBeEmpty" xml:space="preserve">
+    <value>Property name can't be empty.</value>
+  </data>
+  <data name="ScheduleStarted" xml:space="preserve">
+    <value> Schedule started.</value>
+  </data>
+  <data name="CouldNotFindUnpackedDeviceFile" xml:space="preserve">
+    <value>Could not find unpacked device file</value>
+  </data>
+  <data name="DeviceFileDoesNotExistInThePacket" xml:space="preserve">
+    <value>Device file does not exist in the packet.</value>
+  </data>
+  <data name="DataSource" xml:space="preserve">
+    <value>Data Source</value>
+  </data>
+  <data name="DataIOSourceTargetIsUnknown" xml:space="preserve">
+    <value>DataIOSource target is unknown.</value>
+  </data>
+  <data name="TextEditor" xml:space="preserve">
+    <value>Text Editor</value>
+  </data>
+  <data name="UnknownTarget" xml:space="preserve">
+    <value>Unknown target.</value>
+  </data>
+  <data name="InvalidValueForcedPresetValueNotFound" xml:space="preserve">
+    <value>Invalid value. Forced preset value not found.</value>
+  </data>
+  <data name="Changed" xml:space="preserve">
+    <value>Changed</value>
+  </data>
+  <data name="Default" xml:space="preserve">
+    <value>Default</value>
+  </data>
+  <data name="Cancel" xml:space="preserve">
+    <value>Cancel</value>
+  </data>
+  <data name="Action" xml:space="preserve">
+    <value>Action</value>
+  </data>
+  <data name="AllMedias" xml:space="preserve">
+    <value>All Medias</value>
+  </data>
+  <data name="ConnectionFailed" xml:space="preserve">
+    <value>Connection failed.</value>
+  </data>
+  <data name="None" xml:space="preserve">
+    <value>None</value>
+  </data>
+  <data name="InvalidGuruxDeviceTemplateID" xml:space="preserve">
+    <value>Invalid Gurux Device template ID.</value>
+  </data>
+  <data name="MediaProperties" xml:space="preserve">
+    <value>Media properties</value>
+  </data>
 </root>

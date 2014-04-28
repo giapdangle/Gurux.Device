@@ -1,3 +1,4 @@
+using Gurux.Device.Properties;
 //
 // --------------------------------------------------------------------------
 //  Gurux Ltd
@@ -84,7 +85,7 @@ namespace Gurux.Device.Editor
             this.CancelBtn.Name = "CancelBtn";
             this.CancelBtn.Size = new System.Drawing.Size(80, 24);
             this.CancelBtn.TabIndex = 3;
-            this.CancelBtn.Text = "Cancel";
+            this.CancelBtn.Text = Resources.Cancel;
             // 
             // DataSourceTree
             // 
@@ -113,7 +114,7 @@ namespace Gurux.Device.Editor
             this.ShowIcon = false;
             this.ShowInTaskbar = false;
             this.StartPosition = System.Windows.Forms.FormStartPosition.CenterParent;
-            this.Text = "Data Source";
+            this.Text = Resources.DataSource;
             this.ResumeLayout(false);
 
         }

@@ -14,16 +14,17 @@ namespace Gurux.Device.PresetDevices
     /// Device version.
     /// </summary>
     [DataContract()]
+    [Serializable]
     public class GXDeviceVersion
     {
-        GXPublishedDeviceTypeCollection m_Templates;
+        GXPublishedDeviceProfileCollection m_Templates;
 
         /// <summary>
         /// Constructor.
         /// </summary>
         public GXDeviceVersion()
         {
-            Templates = new GXPublishedDeviceTypeCollection(this);
+            Templates = new GXPublishedDeviceProfileCollection(this);
         }
 
         /// <summary>
@@ -32,7 +33,7 @@ namespace Gurux.Device.PresetDevices
         public GXDeviceVersion(string name)
         {
             Name = name;
-            m_Templates = new GXPublishedDeviceTypeCollection(this);
+            m_Templates = new GXPublishedDeviceProfileCollection(this);
         }
 
         /// <summary>
@@ -42,10 +43,10 @@ namespace Gurux.Device.PresetDevices
         {
             Name = item.Name;
             Description = item.Description;
-            m_Templates = new GXPublishedDeviceTypeCollection(this);
-            foreach (GXPublishedDeviceType it in item.Templates)
+            m_Templates = new GXPublishedDeviceProfileCollection(this);
+            foreach (GXPublishedDeviceProfile it in item.Templates)
             {
-                m_Templates.Add(new GXPublishedDeviceType(it));
+                m_Templates.Add(new GXPublishedDeviceProfile(it));
             }
         }
 
@@ -90,7 +91,7 @@ namespace Gurux.Device.PresetDevices
         /// Supported device templates.
         /// </summary>
         [DataMember(IsRequired = false, EmitDefaultValue = false)]
-        public GXPublishedDeviceTypeCollection Templates
+        public GXPublishedDeviceProfileCollection Templates
         {
             get
             {

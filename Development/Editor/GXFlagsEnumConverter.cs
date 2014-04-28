@@ -34,6 +34,7 @@ using System;
 using System.ComponentModel;
 using System.Reflection;
 using System.Windows.Forms;
+using Gurux.Device.Properties;
 
 namespace Gurux.Device.Editor
 {
@@ -214,7 +215,7 @@ namespace Gurux.Device.Editor
 					PropertyDescriptorCollection myCollection = new PropertyDescriptorCollection(null);
 					for (int i = 0; i < myNames.Length; i++)
 					{
-						if (all || ((int)myValues.GetValue(i) != 0 && myNames[i] != "All"))
+						if (all || ((int)myValues.GetValue(i) != 0 && myNames[i] != Resources.All))
 							myCollection.Add(new EnumFieldDescriptor(myType, myNames[i], context));
 					}
 					return myCollection;

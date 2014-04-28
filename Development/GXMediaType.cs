@@ -35,6 +35,7 @@ using System.Collections.Generic;
 using System.Text;
 using System.Runtime.Serialization;
 using System.ComponentModel;
+using Gurux.Device.Properties;
 
 namespace Gurux.Device
 {
@@ -132,9 +133,9 @@ namespace Gurux.Device
         {
             if (string.IsNullOrEmpty(DefaultMediaSettings))
             {
-                return "Default";
+                return Resources.Default;
             }
-            return "Changed";
+            return Resources.Changed;
         }
     }
 }

@@ -28,7 +28,8 @@
     <DefineConstants>DEBUG;TRACE</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
-    <DocumentationFile>bin\Debug\Gurux.Device.XML</DocumentationFile>
+    <DocumentationFile>
+    </DocumentationFile>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
     <DebugType>pdbonly</DebugType>
@@ -37,7 +38,8 @@
     <DefineConstants>TRACE</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
-    <DocumentationFile>bin\Release\Gurux.Device.XML</DocumentationFile>
+    <DocumentationFile>
+    </DocumentationFile>
   </PropertyGroup>
   <ItemGroup>
     <Reference Include="Common.Logging, Version=1.2.0.0, Culture=neutral, PublicKeyToken=af08829b84f0328e">
@@ -109,6 +111,7 @@
     <Compile Include="Editor\UITextTypeEditor.cs" />
     <Compile Include="GenericList.cs" />
     <Compile Include="GuruxProtocolSearchAddIn.cs" />
+    <Compile Include="GXCommon.cs" />
     <Compile Include="GXDelegates.cs" />
     <Compile Include="GXDeviceCollection.cs" />
     <Compile Include="Editor\GXDataIOSource.cs" />
@@ -131,6 +134,8 @@
     <Compile Include="Editor\GXNumberEnumeratorEditor.cs" />
     <Compile Include="GXDeviceList.cs" />
     <Compile Include="Editor\GXNoUITypeEditor.cs" />
+    <Compile Include="GXDeviceProfile.cs" />
+    <Compile Include="GXDeviceProfileCollection.cs" />
     <Compile Include="KeepaliveFieldsIgnored.cs" />
     <Compile Include="NamespaceDoc.cs" />
     <Compile Include="PresetDevices\DownloadState.cs" />
@@ -139,9 +144,8 @@
     <Compile Include="PresetDevices\GXDeviceModel.cs" />
     <Compile Include="PresetDevices\GXDeviceModelCollection.cs" />
     <Compile Include="GXDeviceStatistics.cs" />
-    <Compile Include="GXDeviceType.cs" />
-    <Compile Include="GXDeviceTypeCollection.cs" />
-    <Compile Include="PresetDevices\GXPublishedDeviceTypeCollection.cs" />
+    <Compile Include="PresetDevices\GXDeviceProfileVersion.cs" />
+    <Compile Include="PresetDevices\GXDeviceProfileVersionCollection.cs" />
     <Compile Include="PresetDevices\GXDeviceVersion.cs" />
     <Compile Include="PresetDevices\GXDeviceVersionCollection.cs" />
     <Compile Include="GXEvents.cs" />
@@ -149,7 +153,6 @@
     <Compile Include="GXMediaType.cs" />
     <Compile Include="GXMediaTypeCollection.cs" />
     <Compile Include="GXMediaTypeEditor.cs" />
-    <Compile Include="GXMonitorListener.cs" />
     <Compile Include="GXParameter.cs" />
     <Compile Include="GXPropertyCollection.cs" />
     <Compile Include="GXProperty.cs" />
@@ -175,9 +178,8 @@
     <Compile Include="GXTableColumnAttribute.cs" />
     <Compile Include="IGXPacketHandler.cs" />
     <Compile Include="MediaTypeCollectionPropertyDescriptor.cs" />
-    <Compile Include="PresetDevices\GXPublishedDeviceType.cs" />
-    <Compile Include="PresetDevices\GXTemplateVersion.cs" />
-    <Compile Include="PresetDevices\GXTemplateVersionCollection.cs" />
+    <Compile Include="PresetDevices\GXPublishedDeviceProfile.cs" />
+    <Compile Include="PresetDevices\GXPublishedDeviceProfileCollection.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Properties\Resources.Designer.cs">
       <AutoGen>True</AutoGen>
@@ -190,6 +192,7 @@
     <Compile Include="GXPropertyStatistics.cs" />
     <Compile Include="ResetType.cs" />
     <Compile Include="ScheduleAction.cs" />
+    <Compile Include="ScheduleDay.cs" />
     <Compile Include="ScheduleRepeat.cs" />
     <Compile Include="ScheduleState.cs" />
     <Compile Include="GXMonitorJob.cs" />

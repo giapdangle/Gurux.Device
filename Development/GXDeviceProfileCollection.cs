@@ -36,45 +36,38 @@ using System.Text;
 using System.Xml.Serialization;
 using System.Runtime.Serialization;
 
-namespace Gurux.Device.PresetDevices
+namespace Gurux.Device
 {
 	/// <summary>
 	/// A collection of GXDeviceTypes.
 	/// </summary>
     [CollectionDataContract()]
-    public class GXPublishedDeviceTypeCollection : GenericList<GXPublishedDeviceType>
+    [Serializable]
+    public class GXDeviceProfileCollection : List<GXDeviceProfile>
     {
         /// <summary>
         /// Constructor.
         /// </summary>
-        public GXPublishedDeviceTypeCollection()
+        public GXDeviceProfileCollection()
         {
         }
 
         /// <summary>
         /// Constructor.
         /// </summary>
-        public GXPublishedDeviceTypeCollection(GXDeviceVersion parent)
+        public GXDeviceProfileCollection(object parent)
         {
             Parent = parent;
-        }
-
-        /// <summary>
-        /// Sets parent.
-        /// </summary>
-        protected override void OnBeforeItemAdded(object sender, GenericItemEventArgs<GXPublishedDeviceType> e)
-        {
-            e.Item.Parent = this;
         }
 
 		/// <summary>
 		/// String indexer using GXDeviceType.name.
 		/// </summary>
-        public GXPublishedDeviceType this[string name]
+        public GXDeviceProfile this[string name]
         {
             get
             {
-                foreach (GXPublishedDeviceType it in this)
+                foreach (GXDeviceProfile it in this)
                 {
                     if (string.Compare(it.Name, name, true) == 0)
                     {
@@ -86,7 +79,7 @@ namespace Gurux.Device.PresetDevices
             set
             {
                 int pos = 0;
-                foreach (GXPublishedDeviceType it in this)
+                foreach (GXDeviceProfile it in this)
                 {
                     if (string.Compare(it.Name, name, true) == 0)
                     {
@@ -103,7 +96,7 @@ namespace Gurux.Device.PresetDevices
         /// </summary>
         [XmlIgnore()]
         [IgnoreDataMember()]
-        public GXDeviceVersion Parent
+        public object Parent
         {
             get;
             internal set;
@@ -118,9 +111,9 @@ namespace Gurux.Device.PresetDevices
         /// <remarks>
         /// Mono needs this. Do not remove!
         /// </remarks>
-        public new void Add(GXPublishedDeviceType item)
+        public new void Add(GXDeviceProfile item)
         {
-            GXPublishedDeviceType it = item as GXPublishedDeviceType;
+            GXDeviceProfile it = item as GXDeviceProfile;
             if (it.Parent == null)
             {
                 it.Parent = this;
@@ -134,9 +127,9 @@ namespace Gurux.Device.PresetDevices
         /// </summary>
         /// <param name="publishedName">Name of preset device template.</param>
         /// <returns>Found device template item.</returns>
-        public GXPublishedDeviceType Find(string presetName)
+        public GXDeviceProfile Find(string presetName)
         {
-            foreach (GXPublishedDeviceType type in this)
+            foreach (GXDeviceProfile type in this)
             {
                 if (string.Compare(presetName, type.PresetName, true) == 0)
                 {
@@ -146,18 +139,14 @@ namespace Gurux.Device.PresetDevices
             return null;
         }
 
-        /// <summary>
-        /// Find device template by guid.
-        /// </summary>
-        /// <param name="manufacturer">Name of the manufacturer.</param>
-        /// <returns>Found manufacturer item.</returns>
-        public GXPublishedDeviceType Find(GXPublishedDeviceType type)
+        public GXDeviceProfile Find(string protocolName, string deviceType)
         {
-            foreach (GXPublishedDeviceType dt in this)
+            foreach (GXDeviceProfile type in this)
             {
-                if (dt.Guid == type.Guid)
+                if (string.Compare(protocolName, type.Protocol, true) == 0 &&
+                    string.Compare(deviceType, type.Name, true) == 0)
                 {
-                    return dt;
+                    return type;
                 }
             }
             return null;

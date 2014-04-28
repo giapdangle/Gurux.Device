@@ -39,11 +39,6 @@ namespace Gurux.Device
     /// <summary>
 	/// Determines the status of a GXTable, the enumeration tells, what has happened to the GXTable.
 	/// </summary>
-	/// <remarks>
-	/// If not using .NET Framework, enumeration is GX_TABLE_STATE.
-	/// </remarks>
-	/// <seealso cref="GXDevice.OnTableChanged">GXDeviceEvents.OnTableChanged</seealso>
-	/// <seealso cref="GXDeviceList.OnTableChanged">GXDeviceListEvents.OnTableChanged</seealso>
 	[Flags]
 	public enum TableStates : int
 	{

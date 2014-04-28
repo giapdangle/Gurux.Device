@@ -45,38 +45,40 @@ namespace Gurux.Device
 	/// Basic information about a GXDevice type.
 	/// </summary>
     [DataContract()]
-    public class GXDeviceType
+    [Serializable]
+    public class GXDeviceProfile
     {
         /// <summary>
         /// Constructor.
         /// </summary>
-        public GXDeviceType()
+        public GXDeviceProfile()
         {
         }
 
         /// <summary>
         /// Copy Constructor.
         /// </summary>
-        public GXDeviceType(GXDeviceType item)
+        public GXDeviceProfile(GXDeviceProfile item)
         {
             Protocol = item.Protocol;
             Name = item.Name;
             PresetName = item.PresetName;
             Description = item.Description;
+            this.DeviceGuid = item.DeviceGuid;
         }
 
         /// <summary>
         /// Returns device type parent collection.
         /// </summary>
         [XmlIgnore()]
-        virtual public GXDeviceTypeCollection Parent
+        virtual public GXDeviceProfileCollection Parent
         {
             get;
             internal set;
         }
 
         /// <summary>
-		/// Returns Media dependent protocol settings.
+		/// Device profile protocol name.
 		/// </summary>
         [DataMember(IsRequired = true)]
 		public string Protocol
@@ -92,7 +94,11 @@ namespace Gurux.Device
         {
             get
             {
-                return GXDevice.GetDeviceTemplatePath(Protocol, Name);
+                if (DeviceGuid == Guid.Empty)
+                {
+                    return GXDevice.GetDeviceProfilesPath(Protocol, Name);
+                }
+                return GXDevice.GetDeviceProfilesPath(Protocol, DeviceGuid);
             }
         }
 
@@ -107,7 +113,7 @@ namespace Gurux.Device
         }  
 
         /// <summary>
-		/// The preset name of the device template.
+		/// The preset name of the device profile.
 		/// </summary>
         [DataMember(IsRequired = false, EmitDefaultValue = false)]
         public string PresetName
@@ -122,6 +128,16 @@ namespace Gurux.Device
         [DefaultValue(null)]
         [DataMember(IsRequired = false, EmitDefaultValue = false)]
         public string Description
+        {
+            get;
+            set;
+        }
+
+        /// <summary>
+        /// Device profile guid.
+        /// </summary>
+        [DataMember(IsRequired = false, EmitDefaultValue = false)]
+        public Guid DeviceGuid
         {
             get;
             set;

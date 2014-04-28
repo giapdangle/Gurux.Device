@@ -36,6 +36,7 @@ using System.Text;
 using System.ComponentModel;
 using System.Runtime.Serialization;
 using Gurux.Device.Editor;
+using Gurux.Device.Properties;
 
 namespace Gurux.Device
 {
@@ -67,8 +68,8 @@ namespace Gurux.Device
         /// </summary>
         protected override void OnDeserializing(bool designMode)
         {
-			DeviceGroups = new GXDeviceGroupCollection();
-			Devices = new GXDeviceCollection();
+            DeviceGroups = new GXDeviceGroupCollection();
+            Devices = new GXDeviceCollection();
         }
 
         /// <summary>
@@ -178,29 +179,29 @@ namespace Gurux.Device
         {
             get
             {
-                Dictionary<string, GXDevice> deviceTemplates = new Dictionary<string,GXDevice>();
+                Dictionary<string, GXDevice> DeviceProfiles = new Dictionary<string,GXDevice>();
                 GXSerializedDevice[] devices = new GXSerializedDevice[m_Devices.Count];                                
                 int pos = -1;
                 foreach (GXDevice it in Devices)
                 {
                     GXDevice templ = null;
-                    if (deviceTemplates.ContainsKey(it.ProtocolName + it.DeviceType))
+                    if (DeviceProfiles.ContainsKey(it.ProtocolName + it.DeviceProfile))
                     {
-                        templ = deviceTemplates[it.ProtocolName + it.DeviceType];
+                        templ = DeviceProfiles[it.ProtocolName + it.DeviceProfile];
                     }
                     else
                     {
                         string path;
                         if (it.IsPreset)
                         {
-                            path = GXDevice.GetDeviceTemplatePath(it.Guid);
+                            path = GXDevice.GetDeviceProfilesPath(it.Guid);
                         }
                         else
                         {
-                            path = GXDevice.GetDeviceTemplatePath(it.ProtocolName, it.DeviceType);
+                            path = GXDevice.GetDeviceProfilesPath(it.ProtocolName, it.Guid);
                         }
                         templ = GXDevice.Load(path);
-                        deviceTemplates.Add(it.ProtocolName + it.DeviceType, templ);
+                        DeviceProfiles.Add(it.ProtocolName + it.DeviceProfile, templ);
                     }
                     devices[++pos] = new GXSerializedDevice(it, templ);
                 }
@@ -226,7 +227,7 @@ namespace Gurux.Device
         {
             if (id == 0)
             {
-                throw new Exception("FindItemByID failed. Search ID can't be Zero.");
+                throw new Exception(Resources.FindItemByIDFailedSearchIDCanTBeZero);
             }
             if (id == this.ID)
             {

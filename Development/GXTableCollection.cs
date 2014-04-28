@@ -37,6 +37,7 @@ using System.ComponentModel;
 using System.Collections.Generic;
 using Gurux.Device.Editor;
 using System.Runtime.Serialization;
+using Gurux.Device.Properties;
 
 namespace Gurux.Device
 {
@@ -302,7 +303,7 @@ namespace Gurux.Device
 			}
 			catch (Exception Ex)
 			{
-				throw new Exception("Filed to validate table " + item.Name + ".\n" + Ex.Message);
+				throw new Exception(Resources.FiledToValidateTable + item.Name + ".\n" + Ex.Message);
 			}
 		}		
 	}

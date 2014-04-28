@@ -37,6 +37,7 @@ using System.Data;
 using System.Drawing;
 using System.Text;
 using System.Windows.Forms;
+using Gurux.Device.Properties;
 
 namespace Gurux.Device.Editor
 {
@@ -84,7 +85,7 @@ namespace Gurux.Device.Editor
 
         private void PopulateTree(GXProperty target, GXTable table)
         {
-            TreeNode propNode = new TreeNode("None");            
+            TreeNode propNode = new TreeNode(Resources.None);            
             this.DataSourceTree.Nodes.Add(propNode);    
             TreeNode selNode = null;
             foreach (GXProperty prop in table.Columns)
@@ -180,7 +181,7 @@ namespace Gurux.Device.Editor
 
 		private static void CreateDeviceNode(GXDevice device, object target, long UsedDataSources, out TreeNode deviceNode, ref TreeNode selNode)
 		{
-			deviceNode = new TreeNode(device.DeviceType, 0, 0);
+			deviceNode = new TreeNode(device.DeviceProfile, 0, 0);
 			deviceNode.Tag = device;
 			if (target == device)
 			{

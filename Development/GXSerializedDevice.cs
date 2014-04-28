@@ -47,9 +47,9 @@ namespace Gurux.Device
         {            
         }
 
-        void SaveParameters(object target, ulong id, List<GXParameter> parameters, GXDevice deviceTemplate)
+        void SaveParameters(object target, ulong id, List<GXParameter> parameters, GXDevice DeviceProfiles)
         {
-            object templateTarget = deviceTemplate.FindItemByID(id & 0xFFFF);
+            object templateTarget = DeviceProfiles.FindItemByID(id & 0xFFFF);
             PropertyDescriptorCollection templateProperties = TypeDescriptor.GetProperties(templateTarget);
             object value, templateValue;
             foreach (PropertyDescriptor it in TypeDescriptor.GetProperties(target))
@@ -75,11 +75,11 @@ namespace Gurux.Device
             }
         }
 
-        public GXSerializedDevice(GXDevice device, GXDevice deviceTemplate)
+        public GXSerializedDevice(GXDevice device, GXDevice DeviceProfiles)
         {
             this.ID = device.ID;
             this.ProtocolName = device.ProtocolName;
-            this.DeviceType = device.DeviceType;
+            this.DeviceProfile = device.DeviceProfile;
             this.Name = device.Name;
             this.Guid = device.Guid;
             this.MediaType = device.GXClient.MediaType;
@@ -96,18 +96,18 @@ namespace Gurux.Device
             }
 
             List<GXParameter> parameters = new List<GXParameter>();
-            SaveParameters(device, device.ID, parameters, deviceTemplate);
+            SaveParameters(device, device.ID, parameters, DeviceProfiles);
             foreach (GXCategory cat in device.Categories)
             {
-                SaveParameters(cat, cat.ID, parameters, deviceTemplate);
+                SaveParameters(cat, cat.ID, parameters, DeviceProfiles);
                 foreach (GXProperty prop in cat.Properties)
                 {
-                    SaveParameters(prop, prop.ID, parameters, deviceTemplate);
+                    SaveParameters(prop, prop.ID, parameters, DeviceProfiles);
                 }
             }
             foreach (GXTable table in device.Tables)
             {
-                SaveParameters(table, table.ID, parameters, deviceTemplate);
+                SaveParameters(table, table.ID, parameters, DeviceProfiles);
             }
             Parameters = parameters.ToArray();
         }       
@@ -121,7 +121,7 @@ namespace Gurux.Device
             }
             else
             {
-                device = GXDevice.Create(this.ProtocolName, this.DeviceType, this.Name);
+                device = GXDevice.Create(this.ProtocolName, this.DeviceProfile, this.Name);
             }
             device.ID = this.ID;
             Gurux.Common.IGXMedia media = device.GXClient.SelectMedia(this.MediaType);
@@ -211,7 +211,7 @@ namespace Gurux.Device
         /// </summary>
         [Browsable(false), ReadOnly(true), Category("Design"), Description("Retrieves or sets the DeviceType of the device. DeviceType is defined in device template.")]
         [DataMember(IsRequired = true)]
-        public string DeviceType
+        public string DeviceProfile
         {
             get;
             set;

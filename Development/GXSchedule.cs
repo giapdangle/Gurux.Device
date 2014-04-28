@@ -38,6 +38,7 @@ using System.Runtime.Serialization;
 using Quartz;
 using System.Collections;
 using System.Globalization;
+using Gurux.Device.Properties;
 
 namespace Gurux.Device
 {
@@ -103,14 +104,14 @@ namespace Gurux.Device
         /// </summary>
         protected override void OnDeserializing(bool designMode)
         {
-			m_Interval = m_TransactionCount = 1;
-			m_Action = ScheduleAction.Read;
-			m_Items = new List<object>();
-			m_ExcludedItems = new List<object>();
-			m_TransactionStartTime = m_ScheduleStartTime = DateTime.MinValue;
-			m_TransactionEndTime = m_ScheduleEndTime = DateTime.MaxValue;
-			m_DayOfWeeks = new System.DayOfWeek[0];
-			Statistics = new GXScheduleStatistics();
+            m_Interval = m_TransactionCount = 1;
+            m_Action = ScheduleAction.Read;
+            m_Items = new List<object>();
+            m_ExcludedItems = new List<object>();
+            m_TransactionStartTime = m_ScheduleStartTime = DateTime.MinValue;
+            m_TransactionEndTime = m_ScheduleEndTime = DateTime.MaxValue;
+            m_DayOfWeeks = new System.DayOfWeek[0];
+            Statistics = new GXScheduleStatistics();
         }
 
 		/// <summary>
@@ -118,7 +119,7 @@ namespace Gurux.Device
 		/// </summary>
         protected override void OnSerialized(bool designMode)
         {
-            SerializedItems = "";
+            SerializedExcludedItems = SerializedItems = "";
         }
 
 		/// <summary>
@@ -799,40 +800,44 @@ namespace Gurux.Device
 
         #endregion
 
-        internal Trigger[] GetTriggers()
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <remarks>
+        /// see more: http://www.cronmaker.com/
+        /// </remarks>
+        /// <returns></returns>
+        internal ITrigger GetTrigger()
         {
-            SortedList<DateTime, Trigger> triggers = new SortedList<DateTime, Trigger>();
-            TimeSpan offset = TimeSpan.MinValue;
-            DateTime end, next = ScheduleStartTime.Date;
-            if (DateTime.Now < ScheduleEndTime.Date && (
-                this.RepeatMode == ScheduleRepeat.Second ||
-                this.RepeatMode == ScheduleRepeat.Minute ||
-                this.RepeatMode == ScheduleRepeat.Hour))
-            {
-                next = DateTime.Now.Date;
-            }
-            next = next.AddHours(TransactionStartTime.Hour);
-            next = next.AddMinutes(TransactionStartTime.Minute);
-            next = next.AddSeconds(TransactionStartTime.Second);
+            string format = null;
+            DateTime end;
+            ITrigger trigger = null;
             if (this.RepeatMode == ScheduleRepeat.Once)
-            {                
-                offset = TimeSpan.Zero;
+            {
+                trigger = (ITrigger)TriggerBuilder.Create()
+                    .StartNow()
+                    .EndAt(DateTime.Now)
+                    .Build();                
             }
             else if (this.RepeatMode == ScheduleRepeat.Second)
             {
-                offset = new TimeSpan(0, 0, 0, this.Interval);
+                format = "0/" + Interval.ToString() + " * * * * ?";
             }
             else if (this.RepeatMode == ScheduleRepeat.Minute)
             {
-                offset = new TimeSpan(0, 0, this.Interval, 0);
+                format = "0 0/" + Interval.ToString() + " * * * ?";
             }
             else if (this.RepeatMode == ScheduleRepeat.Hour)
             {
-                offset = new TimeSpan(0, this.Interval, 0, 0);
+                format = "0 0 0/" + Interval.ToString() + " * * ?";
             }
             else if (this.RepeatMode == ScheduleRepeat.Day)
             {
-                offset = new TimeSpan(this.Interval, 0, 0, 0);
+                format = string.Format("{3} {2} {1} 1/{0} * ?",
+                            Interval,        
+                            TransactionStartTime.Hour,
+                            TransactionStartTime.Minute, 
+                            TransactionStartTime.Second);
             }
             else if (this.RepeatMode == ScheduleRepeat.Week)
             {
@@ -841,53 +846,57 @@ namespace Gurux.Device
                 {
                     end = new DateTime(ScheduleEndTime.Year, ScheduleEndTime.Month, ScheduleEndTime.Day, TransactionEndTime.Hour, TransactionEndTime.Minute, TransactionEndTime.Second);
                 }
-                DayOfWeek current = DateTime.Now.DayOfWeek;
-                foreach (DayOfWeek target in this.DayOfWeeks)
+                List<string> days = new List<string>();
+                foreach (DayOfWeek it in this.DayOfWeeks)
                 {
-                    next = ScheduleStartTime.Date;
-                    next = next.AddHours(TransactionStartTime.Hour);
-                    next = next.AddMinutes(TransactionStartTime.Minute);
-                    next = next.AddSeconds(TransactionStartTime.Second);
-                    int days;
-                    if (current > target)
-                    {
-                        days = 7 - (current - target);
-                    }
-                    else
-                    {
-                        days = target - current;
-                    }
-                    days -= ScheduleStartTime.Date.DayOfWeek - DateTime.Now.DayOfWeek;
-                    offset = new TimeSpan(7 * this.Interval, 0, 0, 0);
-                    next = next.AddDays(days);
-                    triggers.Add(next, new SimpleTrigger(this.Name + target, next, end, -1, offset));
-                }
+                    days.Add(it.ToString().Substring(0, 3).ToUpper());
+                }                
+                string tmp = string.Format("{3} {2} {1} ? * {0}, *",                                             
+                                            string.Join(",", days.ToArray()),
+                                            TransactionStartTime.Hour,
+                                            TransactionStartTime.Minute, 
+                                            TransactionStartTime.Second);
+                IScheduleBuilder scheduleBuilder = CronScheduleBuilder.CronSchedule(tmp);
+                trigger = (ITrigger)TriggerBuilder.Create()
+                .WithIdentity(this.Name)
+                .WithSchedule(scheduleBuilder)
+                .Build();                               
             }
             else if (this.RepeatMode == ScheduleRepeat.Month)
             {
-                triggers.Add(next, TriggerUtils.MakeMonthlyTrigger(this.DayOfMonth, this.TransactionStartTime.Hour, this.TransactionStartTime.Minute));
+                string tmp = string.Format("0 {2} {1} {0} 1/{3} ? *",
+                                            this.DayOfMonth,
+                                            this.TransactionStartTime.Hour,
+                                            this.TransactionStartTime.Minute,
+                                            Interval);
+
+                IScheduleBuilder scheduleBuilder = CronScheduleBuilder.CronSchedule(tmp);
+                trigger = (ITrigger)TriggerBuilder.Create()
+                .WithIdentity(this.Name)
+                .WithSchedule(scheduleBuilder)
+                .Build();                
             }
-            if (triggers.Count == 0)
+            if (trigger == null)
             {
                 end = DateTime.MaxValue;
                 if (ScheduleEndTime != DateTime.MaxValue)
                 {
                     end = new DateTime(ScheduleEndTime.Year, ScheduleEndTime.Month, ScheduleEndTime.Day, TransactionEndTime.Hour, TransactionEndTime.Minute, TransactionEndTime.Second);
                 }
-                triggers.Add(next, new SimpleTrigger(this.Name, next, end, -1, offset));
+                IScheduleBuilder scheduleBuilder = CronScheduleBuilder.CronSchedule(format);//.InTimeZone(TimeZoneInfo.Local);
+                trigger = (ITrigger)TriggerBuilder.Create()
+                .WithIdentity(this.Name)
+                .WithSchedule(scheduleBuilder)
+                .Build();                                
             }
-            Trigger[] tmp = new Trigger[triggers.Values.Count];
-            triggers.Values.CopyTo(tmp, 0);
-            return tmp;
+            return trigger;
         }
 
         internal DateTime[] GetNextScheduledDates(int repeatCnt)
-        {           
-            Trigger[] triggers = GetTriggers();
-            SortedList<DateTime, DateTime> dates = new SortedList<DateTime, DateTime>();
-            DateTime? dt = DateTime.Now;
-            int pos = 0;
-            int cnt = triggers.Length;
+        {
+            ITrigger trigger = GetTrigger();
+            List<DateTime> dates = new List<DateTime>();
+            DateTimeOffset? dt = DateTime.Now.ToUniversalTime();
             DateTime end = DateTime.MaxValue;
             if (ScheduleEndTime != DateTime.MaxValue)
             {
@@ -895,18 +904,15 @@ namespace Gurux.Device
             }
             do
             {
-                dt = triggers[pos].GetFireTimeAfter(dt);
-                pos = ++pos % cnt;
-                if (dt == null || dt > end)
+                dt = trigger.GetFireTimeAfter(dt);
+                if (!dt.HasValue || dt > end)
                 {
                     break;
                 }
-                dates.Add((DateTime)dt, (DateTime)dt);
+                dates.Add(dt.Value.DateTime.ToLocalTime());                
             }
             while (dates.Count < repeatCnt);
-            DateTime[] values = new DateTime[dates.Count];
-            dates.Keys.CopyTo(values, 0);            
-            return values;
+            return dates.ToArray();
         }
 
         ///<summary>
@@ -979,7 +985,7 @@ namespace Gurux.Device
         {
             if (this.Parent == null || this.Parent.Parent == null)
             {
-                throw new Exception("Parentless schedule can't be activated.");
+                throw new Exception(Resources.ParentlessScheduleCanTBeActivated);
             }
 			this.Parent.Parent.StartSchedules();
         }
@@ -990,14 +996,19 @@ namespace Gurux.Device
         public void Run()
         {
             Check();
-            JobDetail job = new JobDetail(this.Name + this.ID.ToString(), this.Name + this.ID.ToString(), typeof(Gurux.Device.GXScheduleJob));
-            job.AddJobListener(typeof(GXScheduleListener).Name);
-            job.JobDataMap.Add("Target", this);
-            job.Durable = true;
+            System.Collections.Generic.IDictionary<string, object> data = new Dictionary<string, object>();
+            data.Add(new KeyValuePair<string, object>("Target", this));
+            JobKey id = new JobKey(this.Name + this.ID.ToString(), this.Name + this.ID.ToString());
+
+            IJobDetail job = JobBuilder.Create(typeof(Gurux.Device.GXScheduleJob))
+                .WithIdentity(id)
+                .SetJobData(new JobDataMap(data))
+                .StoreDurably(true)
+                .Build();
             this.Parent.Parent.m_sched.AddJob(job, true);
-            this.Parent.Parent.m_sched.TriggerJob(this.Name + this.ID.ToString(), this.Name + this.ID.ToString());
+            this.Parent.Parent.m_sched.TriggerJob(id);
             this.Status = ScheduleState.Run;
-            this.NotifyChange(ScheduleState.Start);
+            this.NotifyChange(ScheduleState.Start);           
         }
         
         ///<summary>
@@ -1006,13 +1017,15 @@ namespace Gurux.Device
         public void Start()
         {
             Check();
-            JobDetail job = new JobDetail(this.Name + this.ID.ToString(), this.Name + this.ID.ToString(), typeof(Gurux.Device.GXScheduleJob));
-            job.AddJobListener(typeof(GXScheduleListener).Name);
-            job.JobDataMap.Add("Target", this);            
-            foreach (Trigger it in GetTriggers())
-            {
-                this.Parent.Parent.m_sched.ScheduleJob(job, it);
-            }
+            System.Collections.Generic.IDictionary<string, object> data = new Dictionary<string, object>();
+            data.Add(new KeyValuePair<string,object>("Target", this));
+            JobKey id = new JobKey(this.Name + this.ID.ToString(), this.Name + this.ID.ToString());
+            IJobDetail job = JobBuilder.Create(typeof(Gurux.Device.GXScheduleJob)).WithIdentity(new JobKey(this.Name + this.ID.ToString(), this.Name + this.ID.ToString()))
+                .WithIdentity(id)
+                .SetJobData(new JobDataMap(data))
+                .Build();            
+            ITrigger it = GetTrigger();
+            this.Parent.Parent.m_sched.ScheduleJob(job, it);
             this.Status = ScheduleState.Run;
             this.NotifyChange(ScheduleState.Start);
         }
@@ -1026,7 +1039,7 @@ namespace Gurux.Device
             {
                 this.Status = ScheduleState.None;
                 this.NotifyChange(ScheduleState.End);
-                this.Parent.Parent.m_sched.DeleteJob(this.Name + this.ID.ToString(), this.Name + this.ID.ToString());
+                this.Parent.Parent.m_sched.DeleteJob(new JobKey(this.Name + this.ID.ToString(), this.Name + this.ID.ToString()));
             }
         }
     }

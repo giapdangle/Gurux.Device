@@ -47,6 +47,7 @@ using Gurux.Communication;
 using Quartz;
 using Gurux.Common;
 using Gurux.Device.PresetDevices;
+using Gurux.Device.Properties;
 
 namespace Gurux.Device
 {
@@ -67,7 +68,7 @@ namespace Gurux.Device
 		DeviceStates m_Status = DeviceStates.None;
 		GXMediaTypeCollection m_AllowedMediaTypes = null;
 		string m_Description = null;
-		GXDeviceStatistics m_Statistics = null;
+		GXDeviceStatistics m_Statistics = new GXDeviceStatistics();
 		bool m_Dirty = false;
 		int FreezeEvents = 0;
 		/// <summary>
@@ -82,7 +83,6 @@ namespace Gurux.Device
 		private object m_transactionsync;
         object TransactionObject;
         int TransactionCount, TransactionPos;
-        bool Closing;
 
 		[DataMember(Name = "ID", IsRequired = false, EmitDefaultValue = false)]
 		ulong m_ID;
@@ -149,10 +149,29 @@ namespace Gurux.Device
 			Categories = new GXCategoryCollection();
 			Tables = new GXTableCollection();
 			m_AllowedMediaTypes = new GXMediaTypeCollection(this);
-			m_Statistics = new GXDeviceStatistics();
 			m_sync = new object();
 			m_transactionsync = new object();
 		}
+
+        /// <summary>
+        /// Override this to made changes before device load.
+        /// </summary>
+        /// <remarks>
+        /// Rember to call base.
+        /// </remarks>
+        protected override void OnDeserializing(bool designMode)
+        {
+            Keepalive = new GXKeepalive(this);
+            m_Events = new GXEvents();
+            this.GXClient = new GXClient();
+            Categories = new GXCategoryCollection();
+            Tables = new GXTableCollection();
+            m_AllowedMediaTypes = new GXMediaTypeCollection(this);
+            m_Statistics = new GXDeviceStatistics();
+            m_sync = new object();
+            m_transactionsync = new object();
+
+        }
 
 		/// <summary>
 		/// Destructor closes the connection.
@@ -206,33 +225,13 @@ namespace Gurux.Device
 		/// <summary>
 		/// Gets an object that can be used to synchronize the connection.
 		/// </summary>        
-		[Browsable(false)]
+		[Browsable(false), ReadOnly(true)]
 		public object SyncRoot
 		{
 			get
 			{
 				return m_sync;
 			}
-		}
-
-		/// <summary>
-		/// Override this to made changes before device load.
-		/// </summary>
-		/// <remarks>
-		/// Rember to call base.
-		/// </remarks>
-		protected override void OnDeserializing(bool designMode)
-		{
-			Keepalive = new GXKeepalive(this);
-			m_Events = new GXEvents();
-			this.GXClient = new GXClient();
-			Categories = new GXCategoryCollection();
-			Tables = new GXTableCollection();
-			m_AllowedMediaTypes = new GXMediaTypeCollection(this);
-			m_Statistics = new GXDeviceStatistics();
-			m_sync = new object();
-			m_transactionsync = new object();
-
 		}
 
 		/// <summary>
@@ -280,16 +279,35 @@ namespace Gurux.Device
 		}
 
 		/// <summary>
-		/// Retrieves or sets the DeviceType of the device. DeviceType is defined in device template.
+        /// Retrieves or sets the Device profile of the device.
 		/// </summary>
-		[Category("Design"), Description("Retrieves or sets the DeviceType of the device. DeviceType is defined in device template.")]
-		[DataMember(IsRequired = true)]
+        [Category("Design"), Description("Retrieves or sets the Device profile of the device.")]
+		[DataMember(IsRequired = false)]
 		[ValueAccess(ValueAccessType.None, ValueAccessType.None)]
-		public string DeviceType
+		public string DeviceProfile
 		{
 			get;
 			set;
 		}
+
+        /// <summary>
+        /// Obsolete. Use DeviceProfile.
+        /// </summary>
+        [DataMember(IsRequired = false)]
+        public string DeviceType
+        {
+            get
+            {
+                return null;
+            }
+            set
+            {
+                if (value != null)
+                {
+                    DeviceProfile = value;
+                }
+            }
+        }
 
         /// <summary>
         /// Retrieves or sets the manufacturer.
@@ -361,14 +379,14 @@ namespace Gurux.Device
 		/// <returns>A string representation of the value of the instance.</returns>
 		public override string ToString()
 		{
-			return DeviceType;
+			return DeviceProfile;
 		}
 
 		/// <summary>
 		/// Keepalive settings.
 		/// </summary>
         [TypeConverter(typeof(GXKeepaliveConverter))]
-        [DataMember(IsRequired = true)]        
+        [ReadOnly(true), DataMember(IsRequired = true)]        
         [ValueAccess(ValueAccessType.Edit, ValueAccessType.None)]
         virtual public GXKeepalive Keepalive
         {
@@ -512,7 +530,7 @@ namespace Gurux.Device
 			GXCommunicationAttribute att = TypeDescriptor.GetAttributes(device.m_AddIn)[typeof(GXCommunicationAttribute)] as GXCommunicationAttribute;
 			if (att == null || att.PacketHandlerType == null)
 			{
-				throw new Exception("Invalid GXCommunicationAttribute.");
+				throw new Exception(Resources.InvalidGXCommunicationAttribute);
 			}
 			if (att != null && att.PacketParserType != null)
 			{
@@ -520,7 +538,7 @@ namespace Gurux.Device
 			}
 			if (att.PacketHandlerType == null)
 			{
-				throw new Exception("Invalid PacketHandlerType.");
+				throw new Exception(Resources.InvalidPacketHandlerType);
 			}
 			if (device.PacketHandler == null)
 			{
@@ -531,18 +549,18 @@ namespace Gurux.Device
 		/// <summary>
 		/// Creates a new instance of GXDevice using the specfied GXProtocolAddIn.
 		/// </summary>
-		public static GXDevice CreateDeviceTemplate(GXProtocolAddIn addIn, string deviceType)
+		public static GXDevice CreateDeviceProfiles(GXProtocolAddIn addIn, string deviceType)
 		{
 			if (addIn == null)
 			{
-				throw new Exception("No Protocols Found.");
+				throw new Exception(Resources.NoProtocolsFound);
 			}
 			GXDevice device = Activator.CreateInstance(addIn.GetDeviceType()) as GXDevice;
 			device.Guid = Guid.NewGuid();
             device.m_AddIn = addIn;
 			device.ProtocolName = addIn.Name;
             device.ProtocolFile = Path.GetFileName(addIn.GetType().Assembly.Location);
-			device.DeviceType = deviceType;
+			device.DeviceProfile = deviceType;
 			return device;
 		}
 
@@ -557,10 +575,10 @@ namespace Gurux.Device
         /// <returns></returns>
         public static GXDevice Create(string manufacturer, string model, string deviceVersion, string presetName, string name)
         {
-            GXDeviceType type = GXDeviceList.PresetDevices.Find(manufacturer, model, deviceVersion, presetName);
+            GXDeviceProfile type = GXDeviceList.PresetDevices.Find(manufacturer, model, deviceVersion, presetName);
             if (type == null)
             {
-                throw new Exception("Device type is not preset.");
+                throw new Exception(Resources.DeviceTypeIsNotPreset);
             }
             GXDevice device = Load(type.Path);
             device.Manufacturer = manufacturer;
@@ -576,6 +594,7 @@ namespace Gurux.Device
             return device;
         }
 
+        static GXDeviceProfileCollection DeviceTemplates = new GXDeviceProfileCollection();
         /// <summary>
         /// Creates a new instance of GXProtocolAddIn.
         /// </summary>
@@ -587,10 +606,28 @@ namespace Gurux.Device
 		{
 			if (!GXDeviceList.Protocols.ContainsKey(protocolName))
 			{
-				throw new Exception("Invalid protocol AddIn " + protocolName);
-
-			}			
-            GXDevice device = Load(GetDeviceTemplatePath(protocolName, deviceType));
+				throw new Exception(Resources.InvalidProtocolAddIn + protocolName);
+			}
+            string path;
+            GXDeviceProfile dt = DeviceTemplates.Find(protocolName, deviceType);
+            if (dt != null)
+            {
+                path = dt.Path;
+            }
+            else
+            {
+                DeviceTemplates = GXDeviceList.LoadDeviceProfiles();
+            }
+            dt = DeviceTemplates.Find(protocolName, deviceType);
+            if (dt != null)
+            {
+                path = dt.Path;
+            }
+            else
+            {
+                throw new Exception(Resources.UnknownDeviceProfile);
+            }
+            GXDevice device = Load(path);
             device.Name = name;
 			device.Status = DeviceStates.Loaded;
 			if (device.AllowedMediaTypes.Count == 0)
@@ -1051,16 +1088,25 @@ namespace Gurux.Device
 		/// </summary>
 		static public void GetProtocolInfo(string filePath, out bool preset, out string protocol, out string type, out Guid guid)
 		{
-			XmlDataDocument myXmlDocument = new XmlDataDocument();
-			using (Stream stream = File.OpenRead(filePath))
-			{
-				myXmlDocument.Load(stream);
-				protocol = myXmlDocument.DocumentElement["ProtocolName"].InnerText;
-				type = myXmlDocument.DocumentElement["DeviceType"].InnerText;
-                XmlElement tmp = myXmlDocument.DocumentElement["PresetName"];
+            XmlDataDocument myXmlDocument = new XmlDataDocument();
+            using (Stream stream = File.Open(filePath, FileMode.Open, FileAccess.Read, FileShare.Read))
+            {
+                myXmlDocument.Load(stream);
+                protocol = myXmlDocument.DocumentElement["ProtocolName"].InnerText;
+                XmlElement tmp = myXmlDocument.DocumentElement["DeviceProfile"];
+                if (tmp != null)
+                {
+                    type = tmp.InnerText;
+                }
+                else//Old way.
+                {
+                    tmp = myXmlDocument.DocumentElement["DeviceType"];
+                    type = tmp.InnerText;
+                }
+                tmp = myXmlDocument.DocumentElement["PresetName"];
                 preset = tmp != null && !string.IsNullOrEmpty(tmp.InnerText);
                 guid = new Guid(myXmlDocument.DocumentElement["Guid"].InnerText);
-			}
+            }
 		}
 
 		/// <summary>
@@ -1071,30 +1117,31 @@ namespace Gurux.Device
 		{
 			if (!File.Exists(filePath))
 			{
-				System.Diagnostics.Debug.WriteLine("Failed to Load file: " + filePath);
-				throw new FileNotFoundException("Failed to Load file: " + filePath);
+				System.Diagnostics.Debug.WriteLine(Resources.FailedToLoadFile + filePath);
+				throw new FileNotFoundException(Resources.FailedToLoadFile + filePath);
 			}
-			string protocolName = null, type = null;
+            GXDevice device = null;
+            GXProtocolAddIn addIn;
+		    string protocolName = null, type = null;
             Guid deviceGuid;
             bool preset;
             GetProtocolInfo(filePath, out preset, out protocolName, out type, out deviceGuid);
-			if (!GXDeviceList.Protocols.ContainsKey(protocolName))
-			{
-				throw new Exception("Invalid protocol AddIn " + protocolName);
-			}
-            GXProtocolAddIn addIn = GXDeviceList.Protocols[protocolName];
-			GXDevice device = null;
-			System.Collections.Generic.List<Type> types = new System.Collections.Generic.List<Type>();
-			Type deviceType = null;
-			GXDeviceList.GetAddInInfo(addIn, out deviceType, types);			
-			using (FileStream reader = new FileStream(filePath, FileMode.Open))
-			{
+		    if (!GXDeviceList.Protocols.ContainsKey(protocolName))
+		    {
+			    throw new Exception(Resources.InvalidProtocolAddIn + protocolName);
+		    }
+            addIn = GXDeviceList.Protocols[protocolName];
+		    System.Collections.Generic.List<Type> types = new System.Collections.Generic.List<Type>();
+		    Type deviceType = null;
+		    GXDeviceList.GetAddInInfo(addIn, out deviceType, types);
+            using (FileStream reader = new FileStream(filePath, FileMode.Open, FileAccess.Read, FileShare.Read))
+		    {
                 DataContractSerializer x = new DataContractSerializer(deviceType, deviceType.Name, "", types.ToArray());
-				device = (GXDevice)x.ReadObject(reader);
+			    device = (GXDevice)x.ReadObject(reader);
                 //Update serializated target after load.
                 device.Keepalive.SerializedTarget = device.Keepalive.SerializedTarget;
-				reader.Close();
-			}
+			    reader.Close();
+		    }
 			device.m_AddIn = addIn;
 			UpdateAttributes(device);
 			GXSite site = device as GXSite;
@@ -1133,28 +1180,28 @@ namespace Gurux.Device
             {
                 Directory.CreateDirectory(dir);
             }
-			System.Collections.Generic.List<Type> types = new System.Collections.Generic.List<Type>();
-			Type deviceType = null;
-			if (System.Environment.OSVersion.Platform != PlatformID.Unix)
-			{
-				GXDeviceList.GetAddInInfo(this.AddIn, out deviceType, types);
-			}
-			else
-			{
+            System.Collections.Generic.List<Type> types = new System.Collections.Generic.List<Type>();
+            Type deviceType = null;
+            if (System.Environment.OSVersion.Platform != PlatformID.Unix)
+            {
+                GXDeviceList.GetAddInInfo(this.AddIn, out deviceType, types);
+            }
+            else
+            {
                 deviceType = this.AddIn.GetDeviceType();
-			}
+            }
 
-			XmlWriterSettings settings = new XmlWriterSettings();
-			settings.Indent = true;
-			settings.Encoding = System.Text.Encoding.UTF8;
-			settings.CloseOutput = true;
-			settings.CheckCharacters = false;
-			using (XmlWriter writer = XmlWriter.Create(filePath, settings))
-			{
+            XmlWriterSettings settings = new XmlWriterSettings();
+            settings.Indent = true;
+            settings.Encoding = System.Text.Encoding.UTF8;
+            settings.CloseOutput = true;
+            settings.CheckCharacters = false;
+            using (XmlWriter writer = XmlWriter.Create(filePath, settings))
+            {
                 DataContractSerializer x = new DataContractSerializer(deviceType, deviceType.Name, "", types.ToArray());
-				x.WriteObject(writer, this);
-				writer.Close();
-			}
+                x.WriteObject(writer, this);
+                writer.Close();
+            }
 			Gurux.Common.GXFileSystemSecurity.UpdateFileSecurity(filePath);
 			GXSite site = this as GXSite;
 			site.NotifySerialized(true);
@@ -1196,7 +1243,7 @@ namespace Gurux.Device
         /// <param name="protocolName"></param>
         /// <param name="deviceType"></param>
         /// <returns></returns>
-		public static string GetDeviceTemplatePath(string protocolName, string deviceType)
+        public static string GetDeviceProfilesPath(string protocolName, Guid guid)
 		{
 			string path = GXCommon.ApplicationDataPath;
 			if (Environment.OSVersion.Platform == PlatformID.Unix)
@@ -1209,16 +1256,33 @@ namespace Gurux.Device
 			}
             path = Path.Combine(path, "Devices");
             path = Path.Combine(path, protocolName);
-            path = Path.Combine(path, deviceType + ".gxt");
+            path = Path.Combine(path, guid.ToString() + ".gxp");
 			return path;
 		}
+
+        internal static string GetDeviceProfilesPath(string protocolName, string deviceType)
+        {
+            string path = GXCommon.ApplicationDataPath;
+            if (Environment.OSVersion.Platform == PlatformID.Unix)
+            {
+                path = Path.Combine(path, ".Gurux");
+            }
+            else
+            {
+                path = Path.Combine(path, "Gurux");
+            }
+            path = Path.Combine(path, "Devices");
+            path = Path.Combine(path, protocolName);
+            path = Path.Combine(path, deviceType + ".gxp");
+            return path;
+        }
 
         /// <summary>
         /// Returns preset or published device template path.
         /// </summary>
         /// <param name="guid"></param>
         /// <returns></returns>
-        public static string GetDeviceTemplatePath(Guid guid)
+        public static string GetDeviceProfilesPath(Guid guid)
         {
             string path = GXCommon.ApplicationDataPath;
             if (Environment.OSVersion.Platform == PlatformID.Unix)
@@ -1230,7 +1294,7 @@ namespace Gurux.Device
                 path = Path.Combine(path, "Gurux");
             }
             path = Path.Combine(path, "PresetDevices");
-            path = Path.Combine(path, guid.ToString() + ".gxt");
+            path = Path.Combine(path, guid.ToString() + ".gxp");
             return path;
         }
 
@@ -1240,15 +1304,15 @@ namespace Gurux.Device
 		[ReadOnly(true), Category("Files"), Description("Determines the Device template path.")]
 		[ValueAccess(ValueAccessType.Show, ValueAccessType.None)]
         [GXUserLevelAttribute(UserLevelType.Experienced)]
-        public string DeviceTemplatePath
+        public string ProfilePath
 		{
 			get
 			{
                 if (IsPreset)
                 {
-                    return GetDeviceTemplatePath(Guid);
+                    return GetDeviceProfilesPath(Guid);
                 }
-				return GetDeviceTemplatePath(ProtocolName, DeviceType);
+                return GetDeviceProfilesPath(ProtocolName, Guid);
 			}
 		}
 
@@ -1272,7 +1336,7 @@ namespace Gurux.Device
                 }
                 path = Path.Combine(path, "Devices");
                 path = Path.Combine(path, ProtocolName);
-                path = Path.Combine(path, DeviceType + ".gxi");
+                path = Path.Combine(path, DeviceProfile + ".gxi");
                 return path;
             }
         }
@@ -1362,12 +1426,12 @@ namespace Gurux.Device
 		{
 			get
 			{
-				return m_GXClient.m_WaitTime;
+				return m_GXClient.WaitTime;
 			}
 			set
 			{
-				bool bChange = m_GXClient.m_WaitTime != value;
-				m_GXClient.m_WaitTime = value;
+				bool bChange = m_GXClient.WaitTime != value;
+				m_GXClient.WaitTime = value;
 				if (bChange && this.DeviceList != null)
 				{
 					this.DeviceList.NotifyDirty(this);
@@ -1389,12 +1453,12 @@ namespace Gurux.Device
 		{
 			get
 			{
-				return m_GXClient.m_ResendCount;
+				return m_GXClient.ResendCount;
 			}
 			set
 			{
-				bool bChange = m_GXClient.m_ResendCount != value;
-				m_GXClient.m_ResendCount = value;
+				bool bChange = m_GXClient.ResendCount != value;
+				m_GXClient.ResendCount = value;
 				if (bChange && this.DeviceList != null)
 				{
 					this.DeviceList.NotifyDirty(this);
@@ -1412,13 +1476,13 @@ namespace Gurux.Device
 		{
             if (this.IsPreset)
             {
-                GXDeviceType type = GXDeviceList.PresetDevices.Find(Manufacturer, Model, Version, PresetName);
+                GXDeviceProfile type = GXDeviceList.PresetDevices.Find(Manufacturer, Model, Version, PresetName);
                 return type != null;
             }
             else
             {
                 GXTemplateManager m = new GXTemplateManager();
-                return m.IsExists(this.ProtocolName, DeviceType);
+                return m.IsExists(this.ProtocolName, DeviceProfile);
             }
 		}
 
@@ -1439,7 +1503,7 @@ namespace Gurux.Device
                             {
                                 if (string.Compare(deviceVersion, ver.Name, true) == 0)
                                 {
-                                    foreach (GXPublishedDeviceType type in ver.Templates)
+                                    foreach (GXPublishedDeviceProfile type in ver.Templates)
                                     {
                                         if (string.Compare(type.PresetName, presetName, true) == 0)
                                         {
@@ -1461,19 +1525,33 @@ namespace Gurux.Device
 		/// </summary>
 		public static void Unregister(string protocolName, string deviceType)
 		{
-            GXTemplateManager m = new GXTemplateManager();
-            m.RemoveTemplate(protocolName, deviceType);
-            m.Save();
+            GXDeviceProfileCollection list = GXDeviceList.LoadDeviceProfiles();
+            GXDeviceProfile it = list.Find(protocolName, deviceType);
+            list.Remove(it);
+            GXDeviceList.SaveDeviceProfiles(list); 
 		}
 
         /// <summary>
-		/// Registers the custom Device.
+		/// Registers the custom Device profile.
 		/// </summary>
         public void Register()
 		{
-            GXTemplateManager m = new GXTemplateManager();
-            m.AddTemplate(ProtocolName, DeviceType, DeviceTemplatePath);
-            m.Save();
+            GXDeviceProfileCollection list = GXDeviceList.LoadDeviceProfiles();
+            GXDeviceProfile it = new GXDeviceProfile();
+            //Check that device profile do not exists.
+            //This happends in import.
+            foreach (GXDeviceProfile item in list)
+            {
+                if (item.DeviceGuid == Guid)
+                {
+                    return;
+                }
+            }
+            it.Protocol = ProtocolName;
+            it.Name = DeviceProfile;
+            it.DeviceGuid = Guid;
+            list.Add(it);
+            GXDeviceList.SaveDeviceProfiles(list);           
 		}
 
 		/// <summary>
@@ -1625,8 +1703,7 @@ namespace Gurux.Device
 		/// Opens connection.
 		/// </summary>
 		public void Connect()
-		{
-            Closing = false;
+		{            
             GXClient.Trace = this.Trace;
             if (!Tracing && this.Trace != System.Diagnostics.TraceLevel.Off)
             {
@@ -1677,6 +1754,13 @@ namespace Gurux.Device
 			}
 		}
 
+        bool Closing
+        {
+            get
+            {
+                return (m_Status & DeviceStates.Disconnecting) != 0;
+            }
+        }
 		/// <summary>
 		/// Stops keepalive and closes the connection.
 		/// </summary>
@@ -1684,20 +1768,24 @@ namespace Gurux.Device
 		{
 			try
 			{
-                Closing = true;
-                StopMonitoring();
+                this.m_Status |= DeviceStates.Disconnecting;                                
 				Keepalive.Stop();
+                StopMonitoring();
 				GXClient.CloseMedia();
                 if (Tracing)
                 {
                     GXClient.OnTrace -= new Gurux.Common.TraceEventHandler(GXClient_OnTrace);
                     Tracing = false;
-                }
+                }                
 			}
 			finally
 			{
-				Statistics.DisconnectTime = DateTime.Now;
-			}
+                this.Status &= ~DeviceStates.Disconnecting;
+                if (Statistics != null)
+                {
+                    Statistics.DisconnectTime = DateTime.Now;
+                }
+            }
 		}
 
 		/// <summary>
@@ -1769,7 +1857,7 @@ namespace Gurux.Device
 			}
 			else
 			{
-				throw new Exception("Invalid media state.");
+				throw new Exception(Resources.InvalidMediaState);
 			}
 			return;
 		}
@@ -1785,11 +1873,11 @@ namespace Gurux.Device
             }
 			if (this.UpdateInterval == 0)
 			{
-				throw new Exception("Update interval is not set.");
+				throw new Exception(Resources.UpdateIntervalIsNotSet);
 			}
 			if (this.DeviceList == null)
 			{
-				throw new Exception("Parentless device monitoring is not allowed.");
+				throw new Exception(Resources.ParentlessDeviceMonitoringIsNotAllowed);
 			}
 			if ((this.Status & DeviceStates.Connected) == 0)
 			{
@@ -1798,14 +1886,16 @@ namespace Gurux.Device
 			this.Status |= DeviceStates.Monitoring;
 			this.NotifyUpdated(this, new GXDeviceEventArgs(this, this.Status | DeviceStates.MonitorStart));
 			this.DeviceList.StartSchedules();
-			JobDetail job = new JobDetail(this.Name + this.ID.ToString(), this.Name + this.ID.ToString(), typeof(Gurux.Device.GXMonitorJob));
-			job.AddJobListener("GXMonitorListener");
-			job.JobDataMap.Add("Target", this);
-			// Trigger the job to run on the next round minute
-			DateTime next = DateTime.Now.AddSeconds(1).ToUniversalTime();
-			TimeSpan offset = new TimeSpan(this.UpdateInterval * 10000000);
-			int repeatCnt = -1;
-			SimpleTrigger trigger = new SimpleTrigger(this.Name + this.ID.ToString(), next, DateTime.MaxValue, repeatCnt, offset);
+
+            System.Collections.Generic.IDictionary<string, object> data = new Dictionary<string, object>();
+            data.Add(new KeyValuePair<string, object>("Target", this));
+            IJobDetail job = JobBuilder.Create(typeof(Gurux.Device.GXMonitorJob)).WithIdentity(new JobKey(this.Name + this.ID.ToString(), this.Name + this.ID.ToString()))
+                .SetJobData(new JobDataMap(data))
+                .Build();  
+            ITrigger trigger = TriggerBuilder.Create()
+                .WithIdentity(this.Name + this.ID.ToString())
+                .WithSchedule(CronScheduleBuilder.CronSchedule("0/" + this.UpdateInterval.ToString() + " * * * * ?"))
+                .Build();
 			this.DeviceList.m_sched.ScheduleJob(job, trigger);
 			this.Statistics.MonitorStartTime = DateTime.Now;
 		}
@@ -1819,7 +1909,10 @@ namespace Gurux.Device
 			{
 				try
 				{
-					this.DeviceList.m_sched.DeleteJob(this.Name + this.ID.ToString(), this.Name + this.ID.ToString());
+                    if (!this.DeviceList.m_sched.IsShutdown)
+                    {
+                        this.DeviceList.m_sched.DeleteJob(new JobKey(this.Name + this.ID.ToString(), this.Name + this.ID.ToString()));
+                    }
 				}
 				finally
 				{
@@ -1921,11 +2014,11 @@ namespace Gurux.Device
                             }
                             if ((packet.Status & PacketStates.Timeout) != 0)
                             {
-                                throw new Exception("Timeout occurred.");
+                                throw new Exception(Resources.TimeoutOccurred);
                             }
                             else
                             {
-                                throw new Exception("Send failed.");
+                                throw new Exception(Resources.SendFailed);
                             }
                         }
                         if (string.IsNullOrEmpty(att.IsAllSentMessageHandler))
@@ -1954,7 +2047,7 @@ namespace Gurux.Device
                                 //If there is no data to send.
                                 if (packet.GetSize(PacketParts.Data) == 0)
                                 {
-                                    throw new Exception("Invalid Acknowledge message: " + att.AcknowledgeMessageHandler + ".");
+                                    throw new Exception(Resources.InvalidAcknowledgeMessage + att.AcknowledgeMessageHandler + ".");
                                 }
                                 SendPacket(client, delay, packet);
                                 if ((packet.Status & (PacketStates.Timeout | PacketStates.SendFailed)) != 0)
@@ -1966,11 +2059,11 @@ namespace Gurux.Device
                                     }
                                     if ((packet.Status & PacketStates.Timeout) != 0)
                                     {
-                                        throw new Exception("Timeout occurred.");
+                                        throw new Exception(Resources.TimeoutOccurred);
                                     }
                                     else
                                     {
-                                        throw new Exception("Send failed.");
+                                        throw new Exception(Resources.SendFailed);
                                     }
                                 }
                             }
@@ -2076,15 +2169,15 @@ namespace Gurux.Device
                     }
                     if (prop != null)
                     {
-                        throw new Exception(string.Format("{0} Read failed.\r\n{1}", prop.Name, Ex.Message), Ex);
+                        throw new Exception(string.Format(Resources._0ReadFailed1, prop.Name, Ex.Message), Ex);
                     }
                     else if (cat != null)
                     {
-                        throw new Exception(string.Format("{0} Read failed.\r\n{1}", cat.Name, Ex.Message), Ex);
+                        throw new Exception(string.Format(Resources._0ReadFailed1, cat.Name, Ex.Message), Ex);
                     }
                     else if (table != null)
                     {
-                        throw new Exception(string.Format("{0} Read failed.\r\n{1}", table.Name, Ex.Message), Ex);
+                        throw new Exception(string.Format(Resources._0ReadFailed1, table.Name, Ex.Message), Ex);
                     }
                     NotifyTransactionProgress(this, new GXTransactionProgressEventArgs(sender, 1, 1, DeviceStates.ReadEnd));
                     throw Ex;
@@ -2096,6 +2189,10 @@ namespace Gurux.Device
 			}
 			else //If selected item do not have transaction messages.
 			{
+                if ((Status & DeviceStates.Disconnecting) != 0)
+                {
+                    return false;
+                }
 				//If we have read all items...
 				if (TransactionObject == sender)
 				{
@@ -2382,7 +2479,7 @@ namespace Gurux.Device
                         {
                             if (Tracing && m_OnTrace != null)
                             {
-                                m_OnTrace(this, new TraceEventArgs(TraceTypes.Info, string.Format("Wait {0} ms. before next packet is send.", delay)));
+                                m_OnTrace(this, new TraceEventArgs(TraceTypes.Info, string.Format(Resources.Wait0MsBeforeNextPacketIsSend, delay)));
                             }
                             System.Threading.Thread.Sleep(delay);
                         }
@@ -2400,7 +2497,7 @@ namespace Gurux.Device
                     {
                         if (Tracing && m_OnTrace != null)
                         {
-                            m_OnTrace(this, new TraceEventArgs(TraceTypes.Info, string.Format("Wait {0} ms. before next packet is send.", delay)));
+                            m_OnTrace(this, new TraceEventArgs(TraceTypes.Info, string.Format(Resources.Wait0MsBeforeNextPacketIsSend, delay)));
                         }
                         System.Threading.Thread.Sleep(delay);
                     }
@@ -2434,7 +2531,7 @@ namespace Gurux.Device
 				}
 				if (attributes.ContainsKey(index))
 				{
-					throw new Exception("Failed to execute " + it.RequestMessageHandler + ". It already exists.");
+					throw new Exception(Resources.FailedToExecute + it.RequestMessageHandler + Resources.ItAlreadyExists);
 				}
 				attributes[index] = it;
 			}
@@ -2489,7 +2586,7 @@ namespace Gurux.Device
 					if (attributes.ContainsKey(index))
 					{
 						GXInitialActionMessage existAttribute = attributes[index] as GXInitialActionMessage;
-						throw new Exception("Failed to execute " + it.RequestMessageHandler + ". It's Index already exists in " + existAttribute.RequestMessageHandler + ".");
+						throw new Exception(Resources.FailedToExecute + it.RequestMessageHandler + Resources.ItSIndexAlreadyExistsIn + existAttribute.RequestMessageHandler + ".");
 					}
 					attributes[index] = it;
 				}
@@ -2504,7 +2601,7 @@ namespace Gurux.Device
 			//Wait until keepalive is ended.
 			if (!System.Threading.Monitor.TryEnter(m_transactionsync, this.WaitTime))
 			{
-				throw new Exception("Transaction is already in progress.");
+				throw new Exception(Resources.TransactionIsAlreadyInProgress);
 			}
 			bool reading = false;
 			try
@@ -2512,7 +2609,7 @@ namespace Gurux.Device
 				reading = (this.Status & DeviceStates.Reading) != 0;
 				if ((this.Status & (DeviceStates.Reading | DeviceStates.Writing)) != 0)
 				{
-					throw new Exception("Transaction is already in progress.");
+					throw new Exception(Resources.TransactionIsAlreadyInProgress);
 				}
 				if (!reading)
 				{
@@ -2602,14 +2699,14 @@ namespace Gurux.Device
 			//Wait until keepalive is ended.
 			if (!System.Threading.Monitor.TryEnter(m_transactionsync, this.WaitTime))
 			{
-				throw new Exception("Transaction is already in progress.");
+				throw new Exception(Resources.TransactionIsAlreadyInProgress);
 			}
 			bool writing = false;
 			try
 			{
 				if ((this.Status & (DeviceStates.Reading | DeviceStates.Writing)) != 0)
 				{
-					throw new Exception("Transaction is already in progress.");
+					throw new Exception(Resources.TransactionIsAlreadyInProgress);
 				}
 				writing = (this.Status & DeviceStates.Writing) != 0;
 				if (!writing)
@@ -2690,12 +2787,12 @@ namespace Gurux.Device
 		{
             if (Tracing && m_OnTrace != null)
             {
-                m_OnTrace(this, new TraceEventArgs(TraceTypes.Info, type.ToString() + " started."));
+                m_OnTrace(this, new TraceEventArgs(TraceTypes.Info, type.ToString() + Resources.Started));
             }
             //Wait until transaction is ended.
             if (!System.Threading.Monitor.TryEnter(m_transactionsync, this.WaitTime))
             {
-                throw new Exception("Transaction is already in progress.");
+                throw new Exception(Resources.TransactionIsAlreadyInProgress);
             }
             try
             {
@@ -2713,7 +2810,7 @@ namespace Gurux.Device
                 System.Threading.Monitor.Exit(m_transactionsync);
                 if (Tracing && m_OnTrace != null)
                 {
-                    m_OnTrace(this, new TraceEventArgs(TraceTypes.Info, type.ToString() + " ended."));
+                    m_OnTrace(this, new TraceEventArgs(TraceTypes.Info, type.ToString() + Resources.Ended));
                 }
             }
 		}

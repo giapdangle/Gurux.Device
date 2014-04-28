@@ -42,6 +42,7 @@ using ICSharpCode.SharpZipLib.Zip;
 using System.Reflection;
 using Gurux.Common;
 using System.Collections.Generic;
+using Gurux.Device.Properties;
 
 namespace Gurux.Device.Editor
 {
@@ -84,12 +85,12 @@ namespace Gurux.Device.Editor
         /// </summary>
         /// <param name="parent">Parent window.</param>
         /// <param name="path">Path to the file to import.</param>
-        public static GXDeviceType Import(IWin32Window parent, string path)
+        public static GXDeviceProfile Import(IWin32Window parent, string path)
         {
             return Import(parent, path, null);
         }
 
-        public static GXDeviceType Import(IWin32Window parent, string path, string target)
+        public static GXDeviceProfile Import(IWin32Window parent, string path, string target)
         {
             ZipInputStream s = new ZipInputStream(File.OpenRead(path));
             return Import(parent, s, target);
@@ -98,7 +99,7 @@ namespace Gurux.Device.Editor
         /// <summary>
         /// Imports a GXDevice from a byte array.
         /// </summary>
-        public static GXDeviceType Import(IWin32Window parent, byte[] data, string target)
+        public static GXDeviceProfile Import(IWin32Window parent, byte[] data, string target)
         {
             MemoryStream ms = new MemoryStream();
             ms.Write(data, 0, data.Length);
@@ -108,11 +109,11 @@ namespace Gurux.Device.Editor
                 return Import(parent, s, target);
             }
         }
-
 		/// <summary>
 		/// Imports a GXDevice from a stream.
 		/// </summary>
-        private static GXDeviceType Import(IWin32Window parent, ZipInputStream s, string target)
+        /// <param name="usingDeviceProfileName">When template is exported to DC file name is changed to device profile name.</param>
+        private static GXDeviceProfile Import(IWin32Window parent, ZipInputStream s, string target)
         {
             string TempPath = System.IO.Path.GetTempPath() + Guid.NewGuid().ToString();
             Directory.CreateDirectory(TempPath);
@@ -120,13 +121,21 @@ namespace Gurux.Device.Editor
             ZipEntry theEntry;
             ArrayList FilePaths = new ArrayList();
             string DevicePath = "";
+            bool oldWay = false;
             while ((theEntry = s.GetNextEntry()) != null)
             {
                 string FileName = theEntry.Name;
                 FileName = Path.Combine(TempPath , FileName);
-                if (string.Compare(Path.GetExtension(theEntry.Name), ".gxt", true) == 0)
+                if (string.Compare(Path.GetExtension(theEntry.Name), ".gxp", true) == 0 ||
+                    string.Compare(Path.GetExtension(theEntry.Name), ".gxt", true) == 0)
                 {
-                    DevicePath = FileName; //Save .gxt file name for opening
+                    oldWay = string.Compare(Path.GetExtension(theEntry.Name), ".gxt", true) == 0;
+                    if (oldWay)
+                    {
+                        FileName = Path.GetFileNameWithoutExtension(theEntry.Name) + ".gxp";
+                        FileName = Path.Combine(TempPath, FileName);
+                    }
+                    DevicePath = FileName; //Save .gxp file name for opening
                 }
 				FilePaths.Add(FileName);
 				WriteFile(s, FileName);
@@ -135,21 +144,21 @@ namespace Gurux.Device.Editor
 
             if (DevicePath.Trim().Length == 0)
             {
-                throw new Exception("Device file does not exist in the packet.");
+                throw new Exception(Resources.DeviceFileDoesNotExistInThePacket);
             }
             if (!File.Exists(DevicePath)) //Shouldn't happen
             {
-                throw new Exception("Could not find unpacked device file");
+                throw new Exception(Resources.CouldNotFindUnpackedDeviceFile);
             }
 
             string protocol = null, deviceType = null;
             bool preset;
             Guid deviceGuid;            
             GXDevice.GetProtocolInfo(DevicePath, out preset, out protocol, out deviceType, out deviceGuid);
-            GXDeviceType type;
+            GXDeviceProfile type;
             if (preset)
             {
-                Gurux.Device.PresetDevices.GXPublishedDeviceType t = new Gurux.Device.PresetDevices.GXPublishedDeviceType();
+                Gurux.Device.PresetDevices.GXPublishedDeviceProfile t = new Gurux.Device.PresetDevices.GXPublishedDeviceProfile();
                 t.DeviceGuid = t.Guid = deviceGuid;
                 t.Protocol = protocol;
                 t.Name = deviceType;
@@ -157,22 +166,22 @@ namespace Gurux.Device.Editor
             }
             else
             {
-                type = new GXDeviceType();
+                type = new GXDeviceProfile();
                 type.Protocol = protocol;
                 type.Name = deviceType;
+                type.DeviceGuid = deviceGuid;
             }
-            
             string DeviceFilePath;
             string protocolPath;
             if (string.IsNullOrEmpty(target))
             {
                 if (preset)
                 {
-                    DeviceFilePath = GXDevice.GetDeviceTemplatePath(deviceGuid);
+                    DeviceFilePath = GXDevice.GetDeviceProfilesPath(deviceGuid);
                 }
                 else
                 {
-                    DeviceFilePath = GXDevice.GetDeviceTemplatePath(protocol, deviceType);
+                    DeviceFilePath = GXDevice.GetDeviceProfilesPath(protocol, deviceGuid);
                 }               
                 protocolPath = Path.GetDirectoryName(DeviceFilePath);
             }
@@ -198,10 +207,10 @@ namespace Gurux.Device.Editor
             //Ask to overwrite if exists
             if (File.Exists(DeviceFilePath))
             {
-				DialogResult retval = GXCommon.ShowQuestion(parent, "Do you want to replace existing device?");
+				DialogResult retval = GXCommon.ShowQuestion(parent, Resources.DoYouWantToReplaceExistingDevice);
                 if (retval != DialogResult.Yes)
                 {
-                    throw new Exception("Device installation failed");
+                    throw new Exception(Resources.DeviceInstallationFailed);
                 }
             }
             bool restart = false;
@@ -211,7 +220,8 @@ namespace Gurux.Device.Editor
             {
                 FileInfo info = new FileInfo(FilePath);
                 string FileName = info.Name;                
-                if (string.Compare(info.Extension, ".gxt", true) == 0)
+                if (string.Compare(info.Extension, ".gxp", true) == 0 ||
+                    string.Compare(info.Extension, ".gxt", true) == 0)
                 {
                     if (!string.IsNullOrEmpty(Path.GetFileName(target)))
                     {
@@ -267,7 +277,7 @@ namespace Gurux.Device.Editor
                 }
                 else
                 {
-                    throw new Exception(string.Format("Unknown data in exported file. {0}", FileName));
+                    throw new Exception(string.Format(Resources.UnknownDataInExportedFile0, FileName));
                 }
             }
 
@@ -278,10 +288,6 @@ namespace Gurux.Device.Editor
             {
                 GXDeviceList.Update();
                 Device = GXDevice.Load(DeviceFilePath);
-                if (preset)
-                {
-                    Device.PresetName = Path.GetFileNameWithoutExtension(target);
-                }
                 if (!preset)
                 {
                     Device.Register();
@@ -289,15 +295,7 @@ namespace Gurux.Device.Editor
                 if (Device.m_AddIn != null)
                 {
                     Device.m_AddIn.InitializeAfterImport(Device);
-                }
-                if (restart)
-                {
-                    return null;
-                }
-                /*
-                GXDeviceTypeCollection types = Gurux.Device.GXDeviceList.GetDeviceTypes(preset, protocol);
-                return types[Device.DeviceType];
-                 * */
+                }                          
             }
             return type;
         }
@@ -368,14 +366,14 @@ namespace Gurux.Device.Editor
 		/// <summary>
         /// Exports a device from GXDeviceEditor to a .gxz file. 
 		/// </summary>
-		/// <param name="device">Name of the exported device file.</param>
+		/// <param name="device">exported device.</param>
 		/// <param name="path">Path to the file, where to export.</param>
         public static void Export(GXDevice device, string path)
         {
             device.Save(path);
             List<string> filenames = new List<string>();
-            filenames.Add(device.DeviceTemplatePath);
-            string DevFolder = System.IO.Path.GetDirectoryName(device.DeviceTemplatePath);
+            filenames.Add(device.ProfilePath);
+            string DevFolder = System.IO.Path.GetDirectoryName(device.ProfilePath);
             if (!Directory.Exists(DevFolder))
             {
                 Directory.CreateDirectory(DevFolder);
@@ -465,7 +463,7 @@ namespace Gurux.Device.Editor
 			}
 			catch (Exception Ex)
 			{
-				throw new Exception("Version comparisation failed:\r\n" + Ex.Message);
+				throw new Exception(Resources.VersionComparisationFailed + Ex.Message);
 			}
 		}
 	}

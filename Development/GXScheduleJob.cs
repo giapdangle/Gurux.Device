@@ -36,6 +36,7 @@ using System.Linq;
 using System.Text;
 using Quartz;
 using System.Threading;
+using Gurux.Device.Properties;
 
 namespace Gurux.Device
 {
@@ -47,37 +48,40 @@ namespace Gurux.Device
         /// <returns>Returns connected device. Null if connection alreay exists.</returns>
         GXDevice InitializeConnection(GXSchedule schedule, GXDevice device)
         {
-            bool connected = (device.Status & DeviceStates.Connected) != 0;
-			if (!connected)
-			{
-				int pos = -1;
-				do
-				{
-					try
-					{
-						device.Connect();
-						//Increase count in case connection failed.
-						if ((device.Status & DeviceStates.Connected) == 0)
-						{
-							++pos;
-							Thread.Sleep(schedule.ConnectionFailWaitTime);
-						}
-					}
-					catch (Exception Ex)
-					{
-						device.NotifyError(schedule, Ex);
-						++pos;
-						Thread.Sleep(schedule.ConnectionFailWaitTime);
-					}
-				}
-				while ((device.Status & DeviceStates.Connected) == 0 && pos < schedule.ConnectionFailTryCount);
-				if ((device.Status & DeviceStates.Connected) == 0)
-				{
-					throw new Exception("Connection failed.");
-				}
-				return device;
-			}
-            return null;
+            lock (device.SyncRoot)
+            {
+                bool connected = (device.Status & DeviceStates.Connected) != 0;
+                if (!connected)
+                {
+                    int pos = -1;
+                    do
+                    {
+                        try
+                        {
+                            device.Connect();
+                            //Increase count in case connection failed.
+                            if ((device.Status & DeviceStates.Connected) == 0)
+                            {
+                                ++pos;
+                                Thread.Sleep(schedule.ConnectionFailWaitTime);
+                            }
+                        }
+                        catch (Exception Ex)
+                        {
+                            device.NotifyError(schedule, Ex);
+                            ++pos;
+                            Thread.Sleep(schedule.ConnectionFailWaitTime);
+                        }
+                    }
+                    while ((device.Status & DeviceStates.Connected) == 0 && pos < schedule.ConnectionFailTryCount);
+                    if ((device.Status & DeviceStates.Connected) == 0)
+                    {
+                        throw new Exception(Resources.ConnectionFailed);
+                    }
+                    return device;
+                }
+                return null;
+            }
         }
 
         static void SendDataThread(object data)
@@ -105,7 +109,7 @@ namespace Gurux.Device
                 }                
                 else
                 {
-                    Exception ex = new Exception("Transaction is already in progress.");
+                    Exception ex = new Exception(Resources.TransactionIsAlreadyInProgress);
                     device.NotifyError(device, ex);
                 }
             }
@@ -148,7 +152,7 @@ namespace Gurux.Device
         /// <see cref="Trigger" /> fires that is associated with
         /// the <see cref="IJob" />.
         /// </summary>
-        public virtual void Execute(JobExecutionContext context)
+        public virtual void Execute(IJobExecutionContext context)
         {
             GXSchedule schedule = null;
             try
@@ -158,7 +162,7 @@ namespace Gurux.Device
 				{
 					try
 					{
-						Gurux.Common.GXCommon.TraceWriteLine(DateTime.Now.ToShortTimeString() + " Schedule started.");
+						Gurux.Common.GXCommon.TraceWriteLine(DateTime.Now.ToShortTimeString() + Resources.ScheduleStarted);
 						//Update status 
 						schedule.Status |= ScheduleState.TaskRun;
 						schedule.Statistics.StartTime = DateTime.Now;
@@ -291,7 +295,7 @@ namespace Gurux.Device
 						{
 							if ((schedule.Status & ScheduleState.TaskRun) != 0)
 							{
-								Gurux.Common.GXCommon.TraceWriteLine(DateTime.Now.ToShortTimeString() + " Schedule ended.");
+								Gurux.Common.GXCommon.TraceWriteLine(DateTime.Now.ToShortTimeString() + Resources.ScheduleEnded);
 								schedule.Status &= ~ScheduleState.TaskRun;
 								schedule.NotifyChange(ScheduleState.TaskFinish);
 							}

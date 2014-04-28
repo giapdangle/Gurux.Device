@@ -12,6 +12,7 @@ namespace Gurux.Device.PresetDevices
     /// Device model.
     /// </summary>
     [DataContract()]
+    [Serializable]
     public class GXDeviceModel
     {
         GXDeviceVersionCollection m_Versions;

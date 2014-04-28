@@ -32,6 +32,7 @@
 
 using System;
 using System.Collections.Generic;
+using Gurux.Device.Properties;
 
 namespace Gurux.Device.Editor
 {
@@ -59,7 +60,7 @@ namespace Gurux.Device.Editor
 				}
 			}
             m_LastFoundFreeTemplateID = 1;
-            throw new Exception("Invalid Gurux Device template ID.");
+            throw new Exception(Resources.InvalidGuruxDeviceTemplateID);
 		}
 
         /// <summary>
@@ -78,7 +79,7 @@ namespace Gurux.Device.Editor
                 }
             }
             m_LastFoundFreeID = 1;
-            throw new Exception("Invalid Gurux Device template ID.");
+            throw new Exception(Resources.InvalidGuruxDeviceTemplateID);
         }	
 	}
 }

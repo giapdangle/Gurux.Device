@@ -36,37 +36,46 @@ using System.Text;
 using System.Xml.Serialization;
 using System.Runtime.Serialization;
 
-namespace Gurux.Device
+namespace Gurux.Device.PresetDevices
 {
 	/// <summary>
 	/// A collection of GXDeviceTypes.
 	/// </summary>
     [CollectionDataContract()]
-    public class GXDeviceTypeCollection : List<GXDeviceType>
+    [Serializable]
+    public class GXPublishedDeviceProfileCollection : GenericList<GXPublishedDeviceProfile>
     {
         /// <summary>
         /// Constructor.
         /// </summary>
-        public GXDeviceTypeCollection()
+        public GXPublishedDeviceProfileCollection()
         {
         }
 
         /// <summary>
         /// Constructor.
         /// </summary>
-        public GXDeviceTypeCollection(object parent)
+        public GXPublishedDeviceProfileCollection(GXDeviceVersion parent)
         {
             Parent = parent;
+        }
+
+        /// <summary>
+        /// Sets parent.
+        /// </summary>
+        protected override void OnBeforeItemAdded(object sender, GenericItemEventArgs<GXPublishedDeviceProfile> e)
+        {
+            e.Item.Parent = this;
         }
 
 		/// <summary>
 		/// String indexer using GXDeviceType.name.
 		/// </summary>
-        public GXDeviceType this[string name]
+        public GXPublishedDeviceProfile this[string name]
         {
             get
             {
-                foreach (GXDeviceType it in this)
+                foreach (GXPublishedDeviceProfile it in this)
                 {
                     if (string.Compare(it.Name, name, true) == 0)
                     {
@@ -78,7 +87,7 @@ namespace Gurux.Device
             set
             {
                 int pos = 0;
-                foreach (GXDeviceType it in this)
+                foreach (GXPublishedDeviceProfile it in this)
                 {
                     if (string.Compare(it.Name, name, true) == 0)
                     {
@@ -95,7 +104,7 @@ namespace Gurux.Device
         /// </summary>
         [XmlIgnore()]
         [IgnoreDataMember()]
-        public object Parent
+        public GXDeviceVersion Parent
         {
             get;
             internal set;
@@ -110,9 +119,9 @@ namespace Gurux.Device
         /// <remarks>
         /// Mono needs this. Do not remove!
         /// </remarks>
-        public new void Add(GXDeviceType item)
+        public new void Add(GXPublishedDeviceProfile item)
         {
-            GXDeviceType it = item as GXDeviceType;
+            GXPublishedDeviceProfile it = item as GXPublishedDeviceProfile;
             if (it.Parent == null)
             {
                 it.Parent = this;
@@ -126,13 +135,30 @@ namespace Gurux.Device
         /// </summary>
         /// <param name="publishedName">Name of preset device template.</param>
         /// <returns>Found device template item.</returns>
-        public GXDeviceType Find(string presetName)
+        public GXPublishedDeviceProfile Find(string presetName)
         {
-            foreach (GXDeviceType type in this)
+            foreach (GXPublishedDeviceProfile type in this)
             {
                 if (string.Compare(presetName, type.PresetName, true) == 0)
                 {
                     return type;
+                }
+            }
+            return null;
+        }
+
+        /// <summary>
+        /// Find device template by guid.
+        /// </summary>
+        /// <param name="manufacturer">Name of the manufacturer.</param>
+        /// <returns>Found manufacturer item.</returns>
+        public GXPublishedDeviceProfile Find(GXPublishedDeviceProfile type)
+        {
+            foreach (GXPublishedDeviceProfile dt in this)
+            {
+                if (dt.Guid == type.Guid)
+                {
+                    return dt;
                 }
             }
             return null;

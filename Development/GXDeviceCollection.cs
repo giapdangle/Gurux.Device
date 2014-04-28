@@ -39,6 +39,7 @@ using System.ComponentModel;
 using System.Collections;
 using Gurux.Device.Editor;
 using System.Collections.Generic;
+using Gurux.Device.Properties;
 
 namespace Gurux.Device
 {
@@ -106,7 +107,7 @@ namespace Gurux.Device
         {
             if (id == 0)
             {
-                throw new Exception("FindItemByID failed. Search ID can't be Zero.");
+                throw new Exception(Resources.FindItemByIDFailedSearchIDCanTBeZero);
             }
             object item = null;
             foreach (GXDevice it in this)

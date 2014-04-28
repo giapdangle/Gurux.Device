@@ -33,6 +33,7 @@
 using System;
 using System.Collections.Generic;
 using System.Text;
+using System.Runtime.Serialization;
 
 namespace Gurux.Device
 {
@@ -40,39 +41,48 @@ namespace Gurux.Device
     ///Determines the status of a GXSchedule.
     ///</summary>
     [Flags]
+    [DataContract()]
     public enum ScheduleState
     {
         ///<summary>
         ///Schedule is not running.
         ///</summary>
+        [EnumMember(Value = "0")]
         None = 0x0,
         ///<summary>
         ///Schedule has started.
         ///</summary>
+        [EnumMember(Value = "1")]
         Start = 0x1,
         ///<summary>
         ///Schedule is running.
         ///</summary>
+        [EnumMember(Value = "2")]
         Run = 0x2,
         ///<summary>
         ///Schedule has ended.
         ///</summary>
+        [EnumMember(Value = "4")]
         End = 0x4,
         ///<summary>
         ///Scheduled task execution has started.
         ///</summary>
+        [EnumMember(Value = "8")]
         TaskStart = 0x8,
         ///<summary>
         ///Scheduled task execution is running.
         ///</summary>
+        [EnumMember(Value = "16")]
         TaskRun = 0x10,
         ///<summary>
         ///Scheduled task execution is finished.
         ///</summary>
-        TaskFinish = 0x10,
+        [EnumMember(Value = "32")]
+        TaskFinish = 0x20,
         /// <summary>
         /// User has updated content of schedule item.
         /// </summary>
-        Updated = 0x20
+        [EnumMember(Value = "64")]
+        Updated = 0x40
     }
 }

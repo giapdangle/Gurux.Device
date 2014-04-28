@@ -35,6 +35,7 @@ using System.Drawing;
 using System.Collections;
 using System.ComponentModel;
 using System.Windows.Forms;
+using Gurux.Device.Properties;
 
 namespace Gurux.Device.Editor
 {
@@ -110,7 +111,7 @@ namespace Gurux.Device.Editor
 			this.CancelBtn.Name = "CancelBtn";
 			this.CancelBtn.Size = new System.Drawing.Size(80, 24);
 			this.CancelBtn.TabIndex = 1;
-			this.CancelBtn.Text = "Cancel";
+			this.CancelBtn.Text = Resources.Cancel;
 			// 
 			// OKBtn
 			// 
@@ -134,7 +135,7 @@ namespace Gurux.Device.Editor
 			this.Controls.Add(this.EditText);
 			this.Name = "GXUITextEditor";
 			this.ShowInTaskbar = false;
-			this.Text = "Text Editor";
+			this.Text = Resources.TextEditor;
 			this.ResumeLayout(false);
 
 		}

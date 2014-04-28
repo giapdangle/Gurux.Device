@@ -40,6 +40,7 @@ using System.Runtime.Serialization;
 using System.IO;
 using System.Collections.Generic;
 using Gurux.Communication;
+using Gurux.Device.Properties;
 
 namespace Gurux.Device
 {	
@@ -139,20 +140,21 @@ namespace Gurux.Device
                 Name = name;
             }
         }
-				
+
+
         /// <summary>
         /// Override this to made changes before property load.
         /// </summary>
         protected override void OnDeserializing(bool designMode)
-        {			
-			this.Values = new GXValueItemCollection();
-			this.AccessMode = Gurux.Device.AccessMode.ReadWrite;
-			Statistics = new GXPropertyStatistics();
-			BitMask = false;			
-			//Use device value for transaction delay.
-			TransactionDelay = -1;			
+        {
+            this.Values = new GXValueItemCollection();
+            this.AccessMode = Gurux.Device.AccessMode.ReadWrite;
+            Statistics = new GXPropertyStatistics();
+            BitMask = false;
+            //Use device value for transaction delay.
+            TransactionDelay = -1;
         }
-				
+
 		/// <summary>
 		/// Destructor. 
 		/// </summary>
@@ -219,7 +221,7 @@ namespace Gurux.Device
             {
                 if (value == null || value.Length == 0)
                 {
-                    throw new Exception("Property name can't be empty.");
+                    throw new Exception(Resources.PropertyNameCanTBeEmpty);
                 }
                 if (Site != null)
                 {
@@ -331,7 +333,7 @@ namespace Gurux.Device
 		{
             if (string.IsNullOrEmpty(Name))
             {
-                tasks.Add(new GXTask(this, "Name", "Property Name is unknown."));
+                tasks.Add(new GXTask(this, Resources.Name, Resources.PropertyNameIsUnknown));
             }
         }
 	
@@ -428,7 +430,27 @@ namespace Gurux.Device
 		{
 			get;
 			set;
-		}        
+		}
+
+
+        /// <summary>
+        /// Expiration time can be use to tell how often values need to read in ms.
+        /// </summary>
+        /// <remarks>
+        /// In default property is read every time. If property value do not change (it's static) there is no need to read it more than once. 
+        /// In that case set ExpirationTime to -1 and it's read only once. 
+        /// </remarks>
+        [System.ComponentModel.Category("Behavior"), System.ComponentModel.Description("TransactionDelay is the minimum transaction delay time, in milliseconds, between transactions."),
+        TypeConverter(typeof(GXNumberEnumeratorConverter)), GXNumberEnumeratorConverterAttribute(typeof(GXNumberEnum)),        
+        DefaultValue(0)]
+        [GXUserLevelAttribute(UserLevelType.Experienced)]
+        [ValueAccess(ValueAccessType.Edit, ValueAccessType.None)]
+        [DataMember(IsRequired = false, EmitDefaultValue = false)]
+        public int ExpirationTime
+        {
+            get;
+            set;
+        }  
 
 		/// <summary>
         /// The UI data type of the property, described in the template file.
@@ -593,7 +615,7 @@ namespace Gurux.Device
                 {
                     return table.Device;
                 }
-                throw new Exception("Invalid parent.");
+                throw new Exception(Resources.InvalidParent);
             }
         }
 
@@ -756,7 +778,7 @@ namespace Gurux.Device
                     }
                     if (!bFound)
                     {
-                        throw new Exception("Invalid value. Forceed preset value not found.");
+                        throw new Exception(Resources.InvalidValueForceedPresetValueNotFound);
                     }
                 }
                 

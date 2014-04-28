@@ -38,6 +38,7 @@ using System.ComponentModel;
 using Gurux.Device.Editor;
 using System.Collections.Generic;
 using System.Runtime.Serialization;
+using Gurux.Device.Properties;
 
 namespace Gurux.Device
 {
@@ -104,13 +105,13 @@ namespace Gurux.Device
         /// Override this to made changes before property load.
         /// </summary>
         protected override void OnDeserializing(bool designMode)
-		{
+        {
             TransactionDelay = -1;
-			AccessMode = Gurux.Device.AccessMode.ReadWrite;
-			Columns = new GXPropertyCollection();
-			Statistics = new GXTableStatistics();
-			m_DeviceValues = new List<object[]>();
-			m_UIValues = new List<object[]>();
+            AccessMode = Gurux.Device.AccessMode.ReadWrite;
+            Columns = new GXPropertyCollection();
+            Statistics = new GXTableStatistics();
+            m_DeviceValues = new List<object[]>();
+            m_UIValues = new List<object[]>();
         }
 
 		/// <summary>
@@ -282,6 +283,17 @@ namespace Gurux.Device
         [ValueAccess(ValueAccessType.Edit, ValueAccessType.Edit)]
         [Category("Data")]
         virtual public bool ClearPreviousValues
+        {
+            get;
+            set;
+        }
+
+        /// <summary>
+        /// If table is static it's read only once per connection.
+        /// </summary>
+        [DataMember(IsRequired = false, EmitDefaultValue = false)]
+        [ValueAccess(ValueAccessType.Edit, ValueAccessType.None)]
+        public virtual bool IsStatic
         {
             get;
             set;
@@ -601,7 +613,7 @@ namespace Gurux.Device
 			{
 				if (value == null || value.Length == 0)
 				{
-					throw new Exception("Table name can't be empty.");
+					throw new Exception(Resources.TableNameCanTBeEmpty);
 				}
 				if (Site != null)
 				{
@@ -640,7 +652,7 @@ namespace Gurux.Device
 		{
             if (string.IsNullOrEmpty(Name))
             {
-                tasks.Add(new GXTask(this, "Name", "Table name is unknown."));
+                tasks.Add(new GXTask(this, Resources.Name, Resources.TableNameIsUnknown));
             }
             foreach (GXProperty prop in Columns)
             {
@@ -764,7 +776,7 @@ namespace Gurux.Device
                     endtm = Convert.ToDateTime(tmp.End);
                     break;
                 case Gurux.Device.Editor.PartialReadType.Entry:
-                    throw new ArgumentOutOfRangeException("Entry read type is invalid.");                    
+                    throw new ArgumentOutOfRangeException(Resources.EntryReadTypeIsInvalid);                    
                 case Gurux.Device.Editor.PartialReadType.Range:
                     if (tmp.Start == null)
                     {
@@ -784,7 +796,7 @@ namespace Gurux.Device
                     }
                     break;
                 default:
-                    throw new Exception("Invalid start type.");
+                    throw new Exception(Resources.InvalidStartType);
             }
         }
 

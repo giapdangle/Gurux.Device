@@ -53,6 +53,7 @@ namespace Gurux.Device
     /// that was not added by default.
     /// </summary>
     /// <typeparam name="T"></typeparam>
+    [Serializable]
     public class GenericList<T> : IList<T>, ICollection<T>, IEnumerable<T>, IList, ICollection, IEnumerable
     {
         #region Members
@@ -172,7 +173,12 @@ namespace Gurux.Device
 		/// <summary>
 		/// Gets the number of elements contained in the System.Collections.Generic.ICollection.
 		/// </summary>
-        public int Count { get { return this.Items.Count; } }
+        public int Count { 
+            get 
+            {
+                return this.Items.Count; 
+            } 
+        }
 		/// <summary>
 		/// Gets a value indicating whether the System.Collections.Generic.ICollection is read-only.
 		/// </summary>

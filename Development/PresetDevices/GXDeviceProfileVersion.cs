@@ -9,15 +9,16 @@ using System.Xml.Serialization;
 namespace Gurux.Device.PresetDevices
 {
     /// <summary>
-    /// Device template version.
+    /// Device profile version.
     /// </summary>
     [DataContract()]
-    public class GXTemplateVersion
+    [Serializable]
+    public class GXDeviceProfileVersion
     {
         /// <summary>
         /// Constructor.
         /// </summary>
-        public GXTemplateVersion()
+        public GXDeviceProfileVersion()
         {
             this.Guid = System.Guid.NewGuid();
         }
@@ -25,7 +26,7 @@ namespace Gurux.Device.PresetDevices
         /// <summary>
         /// Copy Constructor.
         /// </summary>
-        public GXTemplateVersion(GXTemplateVersion item)
+        public GXDeviceProfileVersion(GXDeviceProfileVersion item)
         {
             Publisher = item.Publisher;
             Anynomous = item.Anynomous;
@@ -58,7 +59,7 @@ namespace Gurux.Device.PresetDevices
         /// </summary>
         [XmlIgnore()]
         [IgnoreDataMember()]
-        public GXTemplateVersionCollection Parent
+        public GXDeviceProfileVersionCollection Parent
         {
             get;
             internal set;

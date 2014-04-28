@@ -12,19 +12,20 @@ namespace Gurux.Device.PresetDevices
     /// List of device versions.
     /// </summary>
     [CollectionDataContract()]
-    public class GXTemplateVersionCollection : GenericList<GXTemplateVersion>
+    [Serializable]
+    public class GXDeviceProfileVersionCollection : GenericList<GXDeviceProfileVersion>
     {
         /// <summary>
         /// Constructor.
         /// </summary>
-        public GXTemplateVersionCollection()
+        public GXDeviceProfileVersionCollection()
         {
         }
 
         /// <summary>
         /// Constructor.
         /// </summary>
-        public GXTemplateVersionCollection(GXPublishedDeviceType parent)
+        public GXDeviceProfileVersionCollection(GXPublishedDeviceProfile parent)
         {
             Parent = parent;
         }
@@ -32,7 +33,7 @@ namespace Gurux.Device.PresetDevices
         /// <summary>
         /// Sets parent.
         /// </summary>
-        protected override void OnBeforeItemAdded(object sender, GenericItemEventArgs<GXTemplateVersion> e)
+        protected override void OnBeforeItemAdded(object sender, GenericItemEventArgs<GXDeviceProfileVersion> e)
         {
             e.Item.Parent = this;
         }
@@ -46,11 +47,11 @@ namespace Gurux.Device.PresetDevices
         /// <remarks>
         /// Mono needs this. Do not remove!
         /// </remarks>
-        public new void Add(GXTemplateVersion item)
+        public new void Add(GXDeviceProfileVersion item)
         {
-            GXTemplateVersion it = item as GXTemplateVersion;
+            GXDeviceProfileVersion it = item as GXDeviceProfileVersion;
             bool found = false;
-            foreach(GXTemplateVersion ver in this)
+            foreach(GXDeviceProfileVersion ver in this)
             {
                 if (ver.Version == item.Version)
                 {
@@ -73,7 +74,7 @@ namespace Gurux.Device.PresetDevices
         /// </summary>
         [XmlIgnore()]
         [IgnoreDataMember()]
-        public GXPublishedDeviceType Parent
+        public GXPublishedDeviceProfile Parent
         {
             get;
             internal set;
@@ -84,9 +85,9 @@ namespace Gurux.Device.PresetDevices
         /// </summary>
         /// <param name="version"></param>
         /// <returns></returns>
-        public GXTemplateVersion Find(int version)
+        public GXDeviceProfileVersion Find(int version)
         {
-            foreach (GXTemplateVersion it in this)
+            foreach (GXDeviceProfileVersion it in this)
             {
                 if (it.Version == version)
                 {
@@ -101,9 +102,9 @@ namespace Gurux.Device.PresetDevices
         /// </summary>
         /// <param name="version">device version.</param>
         /// <returns>Found device version item.</returns>
-        public GXTemplateVersion Find(GXTemplateVersion version)
+        public GXDeviceProfileVersion Find(GXDeviceProfileVersion version)
         {
-            foreach (GXTemplateVersion v in this)
+            foreach (GXDeviceProfileVersion v in this)
             {
                 if (v.Guid == version.Guid)
                 {

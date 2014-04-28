@@ -49,7 +49,7 @@ namespace Gurux.Device
 	/// <summary>
 	/// Common Gurux helpers. 
 	/// </summary>
-	public class GXCommon
+	class GXCommon
 	{
 		/// <summary>
 		/// Converts string to byte[].
