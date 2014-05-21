@@ -201,6 +201,16 @@ namespace Gurux.Device
             m_Keepalive.Set();
         }
 
+        public override string ToString()
+        {
+            string str = "Interval: " + Interval.ToString();
+            if (Target != null)
+            {
+                str += " " + Target.ToString();
+            }
+            return str;            
+        }
+
         /// <summary>
         /// Keepalive started
         /// </summary>

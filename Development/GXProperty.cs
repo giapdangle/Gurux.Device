@@ -105,7 +105,7 @@ namespace Gurux.Device
             /// <summary>
             /// Target is average value.
             /// </summary>
-			AvarageValue = 0x40,
+			AverageValue = 0x40,
             /// <summary>
             /// Target is unit.
             /// </summary>
@@ -573,7 +573,7 @@ namespace Gurux.Device
         [DataMember(IsRequired = false, EmitDefaultValue = false)]
         [ValueAccess(ValueAccessType.Edit, ValueAccessType.None)]
         [Editor(typeof(GXValueCollectionEditor), typeof(System.Drawing.Design.UITypeEditor))]
-        [Browsable(false), ReadOnly(true)]
+        //[Browsable(false), ReadOnly(true)]
         public virtual GXValueItemCollection Values
         {
             get;

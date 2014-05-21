@@ -857,10 +857,23 @@ namespace Gurux.Device
             types.Add(typeof(PartialReadType));
 			types.Add(typeof(PartialReadType));
             types.Add(deviceType);
-            types.AddRange(addIn.GetCategoryTypes(null));
-			types.AddRange(addIn.GetTableTypes(null));
-			types.AddRange(addIn.GetPropertyTypes(null));
-			Type[] tmp = addIn.GetExtraTypes(null);
+            Type[] tmp = addIn.GetCategoryTypes(null);
+            if (tmp != null && tmp.Length != 0)
+            {
+                types.AddRange(tmp);
+            }
+            tmp = addIn.GetTableTypes(null);
+            if (tmp != null && tmp.Length != 0)
+            {
+                types.AddRange(tmp);
+            }
+            tmp = addIn.GetPropertyTypes(null);
+            if (tmp != null && tmp.Length != 0)
+            {
+                types.AddRange(tmp);
+            }
+
+            tmp = addIn.GetExtraTypes(null);
             if (tmp != null && tmp.Length != 0)
             {
                 types.AddRange(tmp);

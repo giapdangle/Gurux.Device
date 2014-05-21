@@ -211,6 +211,17 @@ namespace Gurux.Device
             }
         }
 
+        bool IsCancelled = false;
+
+        public void Cancel()
+        {
+            IsCancelled = true;
+            if (GXClient != null)
+            {
+                GXClient.Cancel();
+            }
+        }
+
 		/// <summary>
 		/// Notifies a change in the device trought events.
 		/// </summary>
@@ -1703,16 +1714,23 @@ namespace Gurux.Device
 		/// Opens connection.
 		/// </summary>
 		public void Connect()
-		{            
-            GXClient.Trace = this.Trace;
-            if (!Tracing && this.Trace != System.Diagnostics.TraceLevel.Off)
+		{
+            try
             {
-                Tracing = true;
-                GXClient.OnTrace += new Gurux.Common.TraceEventHandler(GXClient_OnTrace);                
+                GXClient.Trace = this.Trace;
+                if (!Tracing && this.Trace != System.Diagnostics.TraceLevel.Off)
+                {
+                    Tracing = true;
+                    GXClient.OnTrace += new Gurux.Common.TraceEventHandler(GXClient_OnTrace);
+                }
+                GXClient.Open();
+                Keepalive.Start();
+                Statistics.ConnectTime = DateTime.Now;
             }
-			GXClient.Open();
-			Keepalive.Start();
-			Statistics.ConnectTime = DateTime.Now;
+            finally
+            {
+                IsCancelled = false;
+            }
 		}
 
         void GXClient_OnTrace(object sender, TraceEventArgs e)
@@ -1767,7 +1785,7 @@ namespace Gurux.Device
 		public void Disconnect()
 		{
 			try
-			{
+			{                
                 this.m_Status |= DeviceStates.Disconnecting;                                
 				Keepalive.Stop();
                 StopMonitoring();
@@ -1780,6 +1798,7 @@ namespace Gurux.Device
 			}
 			finally
 			{
+                IsCancelled = false;
                 this.Status &= ~DeviceStates.Disconnecting;
                 if (Statistics != null)
                 {
@@ -1847,7 +1866,14 @@ namespace Gurux.Device
                     m_PacketHandler.Connect(this);
                 }
 				ExecuteInitialAction(InitialActionType.Connected);
-				NotifyUpdated(this, new GXDeviceEventArgs(this, DeviceStates.Connected));
+                if (IsCancelled)
+                {
+                    Disconnect();
+                }
+                else
+                {
+                    NotifyUpdated(this, new GXDeviceEventArgs(this, DeviceStates.Connected));
+                }
 			}
 			else if (e.State == MediaState.Closed)
 			{
@@ -1935,7 +1961,12 @@ namespace Gurux.Device
 		/// <returns>Returs False if if there are more items to read.</returns>
 		internal bool Execute(object sender, GXClient client, GXCommunicationMessageAttribute att, bool initialTransaction, bool read)
 		{
-			if (Keepalive.TransactionResets)
+            //If transaction is cancelled.
+            if (IsCancelled)
+            {
+                return false;
+            }
+            if (Keepalive.TransactionResets)
 			{
 				if (client.Trace >= System.Diagnostics.TraceLevel.Info)
 				{
@@ -2005,6 +2036,11 @@ namespace Gurux.Device
                         }
 
                         SendPacket(client, delay, packet);
+                        //If transaction is cancelled.
+                        if (IsCancelled)
+                        {
+                            return false;
+                        }
                         if ((packet.Status & (PacketStates.Timeout | PacketStates.SendFailed)) != 0)
                         {
                             //If connection is closed.
@@ -2479,7 +2515,7 @@ namespace Gurux.Device
                         {
                             if (Tracing && m_OnTrace != null)
                             {
-                                m_OnTrace(this, new TraceEventArgs(TraceTypes.Info, string.Format(Resources.Wait0MsBeforeNextPacketIsSend, delay)));
+                                m_OnTrace(this, new TraceEventArgs(TraceTypes.Info, string.Format(Resources.Wait0MsBeforeNextPacketIsSend, delay), null));
                             }
                             System.Threading.Thread.Sleep(delay);
                         }
@@ -2497,14 +2533,17 @@ namespace Gurux.Device
                     {
                         if (Tracing && m_OnTrace != null)
                         {
-                            m_OnTrace(this, new TraceEventArgs(TraceTypes.Info, string.Format(Resources.Wait0MsBeforeNextPacketIsSend, delay)));
+                            m_OnTrace(this, new TraceEventArgs(TraceTypes.Info, string.Format(Resources.Wait0MsBeforeNextPacketIsSend, delay), null));
                         }
                         System.Threading.Thread.Sleep(delay);
                     }
                 }
                 client.Send(packet, true);
             }
-            Statistics.PacketReceiveTime = DateTime.Now;            
+            if (!IsCancelled)
+            {
+                Statistics.PacketReceiveTime = DateTime.Now;
+            }
         }
 
 		/// <summary>
@@ -2664,6 +2703,8 @@ namespace Gurux.Device
 			}
 			finally
 			{
+                //Reset cancel.
+                IsCancelled = false;
 				System.Threading.Monitor.Exit(m_transactionsync);
 				//Reset Reading flag.
 				if (!reading)
@@ -2755,6 +2796,8 @@ namespace Gurux.Device
 			}
 			finally
 			{
+                //Reset cancel.
+                IsCancelled = false;
 				System.Threading.Monitor.Exit(m_transactionsync);
 				//Reset Reading flag.
 				if (!writing)
@@ -2787,7 +2830,7 @@ namespace Gurux.Device
 		{
             if (Tracing && m_OnTrace != null)
             {
-                m_OnTrace(this, new TraceEventArgs(TraceTypes.Info, type.ToString() + Resources.Started));
+                m_OnTrace(this, new TraceEventArgs(TraceTypes.Info, type.ToString() + Resources.Started, null));
             }
             //Wait until transaction is ended.
             if (!System.Threading.Monitor.TryEnter(m_transactionsync, this.WaitTime))
@@ -2802,6 +2845,11 @@ namespace Gurux.Device
                     {
                         TransactionObject = null;
                         Execute(this, this.GXClient, it, true, true);
+                        //If transaction is cancelled.
+                        if (IsCancelled)
+                        {
+                            break;
+                        }
                     }
                 }
             }
@@ -2810,7 +2858,7 @@ namespace Gurux.Device
                 System.Threading.Monitor.Exit(m_transactionsync);
                 if (Tracing && m_OnTrace != null)
                 {
-                    m_OnTrace(this, new TraceEventArgs(TraceTypes.Info, type.ToString() + Resources.Ended));
+                    m_OnTrace(this, new TraceEventArgs(TraceTypes.Info, type.ToString() + Resources.Ended, null));
                 }
             }
 		}
@@ -2831,7 +2879,7 @@ namespace Gurux.Device
 			value = this.PacketHandler.DeviceValueToUIValue(sender, value);
 			if (value is byte[])
 			{
-				value = BitConverter.ToString((byte[])value).Replace('-', ' ');
+				value = Gurux.Common.GXCommon.ToHex((byte[])value, true);
 			}
 			return value;
 		}

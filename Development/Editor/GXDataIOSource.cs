@@ -320,7 +320,7 @@ namespace Gurux.Device.Editor
 					}
 					return Convert.ToString(prop.Statistics.Maximum);
 				}
-				if (action == GXProperty.AvailableTargets.AvarageValue)
+				if (action == GXProperty.AvailableTargets.AverageValue)
 				{
 					//Return if value has not change.
 					if ((status & (int)Gurux.Device.PropertyStates.AverageChanged) == 0)

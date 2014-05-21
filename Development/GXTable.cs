@@ -289,11 +289,19 @@ namespace Gurux.Device
         }
 
         /// <summary>
-        /// If table is static it's read only once per connection.
+        /// Expiration time can be use to tell how often values need to read in ms.
         /// </summary>
-        [DataMember(IsRequired = false, EmitDefaultValue = false)]
+        /// <remarks>
+        /// In default property is read every time. If property value do not change (it's static) there is no need to read it more than once. 
+        /// In that case set ExpirationTime to -1 and it's read only once. 
+        /// </remarks>
+        [System.ComponentModel.Category("Behavior"), System.ComponentModel.Description("TransactionDelay is the minimum transaction delay time, in milliseconds, between transactions."),
+        TypeConverter(typeof(GXNumberEnumeratorConverter)), GXNumberEnumeratorConverterAttribute(typeof(GXNumberEnum)),
+        DefaultValue(0)]
+        [GXUserLevelAttribute(UserLevelType.Experienced)]
         [ValueAccess(ValueAccessType.Edit, ValueAccessType.None)]
-        public virtual bool IsStatic
+        [DataMember(IsRequired = false, EmitDefaultValue = false)]
+        public int ExpirationTime
         {
             get;
             set;

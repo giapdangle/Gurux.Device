@@ -88,7 +88,7 @@ namespace Gurux.Device.Editor
                         if (source.Target is GXProperty)
                         {
                             GXProperty.AvailableTargets action = (GXProperty.AvailableTargets)source.Action;
-                            if (!(action == GXProperty.AvailableTargets.Value || action == GXProperty.AvailableTargets.AvarageValue || action == GXProperty.AvailableTargets.MinimumValue || action == GXProperty.AvailableTargets.MaximumValue))
+                            if (!(action == GXProperty.AvailableTargets.Value || action == GXProperty.AvailableTargets.AverageValue || action == GXProperty.AvailableTargets.MinimumValue || action == GXProperty.AvailableTargets.MaximumValue))
                             {
                                 continue;
                             }

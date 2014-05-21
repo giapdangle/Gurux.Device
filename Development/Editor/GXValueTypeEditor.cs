@@ -99,7 +99,7 @@ namespace Gurux.Device.Editor
             }
             if (value != null)
             {
-                m_List.SelectedIndex = m_List.Items.IndexOf(value.ToString());
+                m_List.SelectedIndex = m_List.Items.IndexOf(value);
             }
             m_List.SelectedIndexChanged += new System.EventHandler(this.OnSelectedIndexChanged);
             // Show Listbox as a DropDownControl. This methods returns only when the dropdowncontrol is closed
