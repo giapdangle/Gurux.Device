@@ -52,18 +52,18 @@ namespace Gurux.Device.Editor
         }
 
         /// <summary>
-        /// Initializes a new instance of the GXWriteMessage class.
+        /// Initializes a new instance of the GXInitialActionMessage class.
         /// </summary>
         /// <param name="requestHandler">The handler of request message.</param>
 		/// <param name="type">Type of the message.</param>
         public GXInitialActionMessage(InitialActionType type, string requestHandler)
         {
             Type = type;
-            m_RequestMessageHandler = requestHandler;
+            RequestMessageHandler = requestHandler;
         }
 
         /// <summary>
-        /// Initializes a new instance of the GXWriteMessage class.
+        /// Initializes a new instance of the GXInitialActionMessage class.
         /// </summary>
 		/// <param name="type">Type of the message</param>
         /// <param name="requestHandler">The handler of request message.</param>
@@ -71,12 +71,12 @@ namespace Gurux.Device.Editor
         public GXInitialActionMessage(InitialActionType type, string requestHandler, string replyHandler)
         {
             Type = type;
-            m_RequestMessageHandler = requestHandler;
-            m_ReplyMessageHandler = replyHandler;
+            RequestMessageHandler = requestHandler;
+            ReplyMessageHandler = replyHandler;
         }
 
         /// <summary>
-        /// Initializes a new instance of the GXWriteMessage class.
+        /// Initializes a new instance of the GXInitialActionMessage class.
         /// </summary>
 		/// <param name="type">Type of the message</param>
 		/// <param name="requestHandler">The handler of request message.</param>
@@ -86,10 +86,10 @@ namespace Gurux.Device.Editor
         public GXInitialActionMessage(InitialActionType type, string requestHandler, string replyHandler, string isAllSentHandler, string acknowledge)
         {
             Type = type;
-            m_RequestMessageHandler = requestHandler;
-            m_ReplyMessageHandler = replyHandler;
-            m_IsAllSentMessageHandler = isAllSentHandler;
-            m_AcknowledgeMessageHandler = acknowledge;
+            RequestMessageHandler = requestHandler;
+            ReplyMessageHandler = replyHandler;
+            IsAllSentMessageHandler = isAllSentHandler;
+            AcknowledgeMessageHandler = acknowledge;
         }
     };
 }

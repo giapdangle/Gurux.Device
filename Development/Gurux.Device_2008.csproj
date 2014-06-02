@@ -141,7 +141,6 @@
     <Compile Include="PresetDevices\GXPublishedDeviceProfileCollection.cs" />
     <Compile Include="PresetDevices\GXDeviceVersion.cs" />
     <Compile Include="PresetDevices\GXDeviceVersionCollection.cs" />
-    <Compile Include="GXEvents.cs" />
     <Compile Include="GXKeepalive.cs" />
     <Compile Include="GXMediaType.cs" />
     <Compile Include="GXMediaTypeCollection.cs" />

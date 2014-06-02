@@ -530,6 +530,16 @@ namespace Gurux.Device
             }
         }
 
+        /// <summary>
+        /// Send reply to the meter.
+        /// </summary>
+        /// <param name="data"></param>
+        /// <param name="senderInfo"></param>
+        public void Reply(byte[] data, string senderInfo)
+        {
+            this.Device.Reply(this, data, senderInfo);
+        }
+
 		/// <summary>
 		/// Reset the GXTable.
 		/// </summary>

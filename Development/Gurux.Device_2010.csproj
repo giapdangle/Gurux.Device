@@ -136,6 +136,7 @@
     <Compile Include="Editor\GXNoUITypeEditor.cs" />
     <Compile Include="GXDeviceProfile.cs" />
     <Compile Include="GXDeviceProfileCollection.cs" />
+    <Compile Include="IGXEventHandler.cs" />
     <Compile Include="KeepaliveFieldsIgnored.cs" />
     <Compile Include="NamespaceDoc.cs" />
     <Compile Include="PresetDevices\DownloadState.cs" />
@@ -148,7 +149,6 @@
     <Compile Include="PresetDevices\GXDeviceProfileVersionCollection.cs" />
     <Compile Include="PresetDevices\GXDeviceVersion.cs" />
     <Compile Include="PresetDevices\GXDeviceVersionCollection.cs" />
-    <Compile Include="GXEvents.cs" />
     <Compile Include="GXKeepalive.cs" />
     <Compile Include="GXMediaType.cs" />
     <Compile Include="GXMediaTypeCollection.cs" />

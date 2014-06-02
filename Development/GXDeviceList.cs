@@ -44,6 +44,7 @@ using Quartz.Impl;
 using Gurux.Common;
 using Gurux.Device.PresetDevices;
 using Gurux.Device.Properties;
+using Gurux.Communication;
 
 namespace Gurux.Device
 {    
@@ -54,6 +55,7 @@ namespace Gurux.Device
     [GXDataIOSourceAttribute(true, GXDataIOSourceType.DeviceList, GXDeviceList.AvailableTargets.All)]
     public class GXDeviceList : GXSite, IDisposable, INotifyPropertyChanged
     {
+        internal static Dictionary<string, IGXEventHandler> EventHandlers;
         [DataMember(Name = "Name", IsRequired = false, EmitDefaultValue = false)]
         string m_Name;
         [DataMember(Name = "CustomUI", IsRequired = false, EmitDefaultValue = false)]
@@ -79,6 +81,13 @@ namespace Gurux.Device
         {            
             DeviceGroups = new GXDeviceGroupCollection();
             this.Schedules = new GXScheduleCollection();
+            lock(this)
+            {
+                if (EventHandlers == null)
+                {
+                    EventHandlers = new Dictionary<string, IGXEventHandler>();
+                }
+            }
         }
 
         /// <summary>
@@ -88,6 +97,13 @@ namespace Gurux.Device
         {
 			DeviceGroups = new GXDeviceGroupCollection();
 			this.Schedules = new GXScheduleCollection();
+            lock(this)
+            {
+                if (EventHandlers == null)
+                {
+                    EventHandlers = new Dictionary<string, IGXEventHandler>();
+                }
+            }
         }
 
         /// <summary>
@@ -354,22 +370,6 @@ namespace Gurux.Device
 								prop.DisplayType = value;
 							}
 						}
-						foreach (var cat in dev.Events.Categories)
-						{
-							cat.Properties.NotifyDisplayTypeChanged(value);
-							foreach (var prop in cat.Properties)
-							{
-								prop.DisplayType = value;
-							}
-						}
-						foreach (var table in dev.Events.Tables)
-						{
-							table.Columns.NotifyDisplayTypeChanged(value);
-							foreach (var prop in table.Columns)
-							{
-								prop.DisplayType = value;
-							}
-						}
 					}
 				}
 			}
@@ -593,10 +593,12 @@ namespace Gurux.Device
             settings.CloseOutput = true;
             settings.CheckCharacters = false;
             DataContractSerializer x = new DataContractSerializer(typeof(GXDeviceProfileCollection));
-            using (XmlWriter writer = XmlWriter.Create(GetProfilePath(), settings))
+            string path = GetProfilePath();
+            using (XmlWriter writer = XmlWriter.Create(path, settings))
             {
                 x.WriteObject(writer, list);
             }
+            Gurux.Common.GXFileSystemSecurity.UpdateFileSecurity(path);
         }
 
         internal static GXDeviceProfileCollection LoadDeviceProfiles()
@@ -764,6 +766,7 @@ namespace Gurux.Device
         /// <param name="path"></param>
         public void Load(string path)
         {
+
             try
             {
                 NotifyLoadBegin();
@@ -838,6 +841,29 @@ namespace Gurux.Device
                             schedule.ExcludedItems.Add(target);
                         }
                     }
+                }
+                //Find event listeners.
+                foreach(GXDevice it in this.DeviceGroups.GetDevicesRecursive())
+                {
+                    IGXEventHandler handler;
+                    if (!EventHandlers.ContainsKey(it.DeviceProfile))
+                    {
+                        handler = EventHandlers[it.DeviceProfile] = null;
+                        foreach (Type type in it.GetType().Assembly.GetTypes())
+                        {
+                            if (typeof(IGXEventHandler).IsAssignableFrom(type))
+                            {
+                                handler = EventHandlers[it.DeviceProfile] = Activator.CreateInstance(type) as IGXEventHandler;
+                                handler.Clients = this;
+                                break;
+                            }
+                        }                        
+                    }
+                    else
+                    {
+                        handler = EventHandlers[it.DeviceProfile];
+                    }
+                    it.GXClient.AddEventHandler(handler, this);
                 }
                 this.FileName = path;                
                 this.Dirty = false;

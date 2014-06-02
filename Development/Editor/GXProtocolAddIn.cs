@@ -64,10 +64,6 @@ namespace Gurux.Device.Editor
 			/// </summary>
 			Categories = 0x1,
 			/// <summary>
-			/// Event GXCategories and GXTables
-			/// </summary>
-			Events = 0x2,
-			/// <summary>
 			/// Tables
 			/// </summary>
 			Tables = 0x4,
@@ -133,7 +129,7 @@ namespace Gurux.Device.Editor
 		{
 			get
 			{
-				return VisibilityItems.Categories | VisibilityItems.Events | VisibilityItems.Tables;
+				return VisibilityItems.Categories | VisibilityItems.Tables;
 			}
 		}
 

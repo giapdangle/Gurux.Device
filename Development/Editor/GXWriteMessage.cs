@@ -48,7 +48,7 @@ namespace Gurux.Device.Editor
         /// <param name="requestHandler">The handler of request message.</param>
         public GXWriteMessage(string requestHandler)
         {
-            m_RequestMessageHandler = requestHandler;
+            RequestMessageHandler = requestHandler;
         }
 
         /// <summary>
@@ -58,8 +58,8 @@ namespace Gurux.Device.Editor
         /// <param name="replyHandler">The handler of reply message.</param>
         public GXWriteMessage(string requestHandler, string replyHandler)
         {
-            m_RequestMessageHandler = requestHandler;
-            m_ReplyMessageHandler = replyHandler;
+            RequestMessageHandler = requestHandler;
+            ReplyMessageHandler = replyHandler;
         }
 
         /// <summary>
@@ -71,10 +71,51 @@ namespace Gurux.Device.Editor
 		/// <param name="acknowledge">The handler of Acknowledge message.</param>
         public GXWriteMessage(string requestHandler, string replyHandler, string isAllSentHandler, string acknowledge)
         {
-            m_RequestMessageHandler = requestHandler;
-            m_ReplyMessageHandler = replyHandler;
-            m_IsAllSentMessageHandler = isAllSentHandler;
-            m_AcknowledgeMessageHandler = acknowledge;
+            RequestMessageHandler = requestHandler;
+            ReplyMessageHandler = replyHandler;
+            IsAllSentMessageHandler = isAllSentHandler;
+            AcknowledgeMessageHandler = acknowledge;
+        }
+    };
+
+    /// <summary>
+    /// Generates event transaction messages.
+    /// </summary>
+    public class GXEventMessage : GXCommunicationMessageAttribute
+    {
+        /// <summary>
+        /// Initializes a new instance of the GXEventMessage class.
+        /// </summary>
+        /// <param name="requestHandler">The handler of request message.</param>
+        public GXEventMessage(string requestHandler)
+        {
+            RequestMessageHandler = requestHandler;
+        }
+
+        /// <summary>
+        /// Initializes a new instance of the GXEventMessage class.
+        /// </summary>
+        /// <param name="requestHandler">The handler of request message.</param>
+        /// <param name="replyHandler">The handler of reply message.</param>
+        public GXEventMessage(string requestHandler, string replyHandler)
+        {
+            RequestMessageHandler = requestHandler;
+            ReplyMessageHandler = replyHandler;
+        }
+
+        /// <summary>
+        /// Initializes a new instance of the GXEventMessage class.
+        /// </summary>
+        /// <param name="requestHandler">The handler of request message.</param>
+        /// <param name="replyHandler">The handler of reply message.</param>
+        /// <param name="isAllSentHandler">The handler of IsAllSent message.</param>
+        /// <param name="acknowledge">The handler of Acknowledge message.</param>
+        public GXEventMessage(string requestHandler, string replyHandler, string isAllSentHandler, string acknowledge)
+        {
+            RequestMessageHandler = requestHandler;
+            ReplyMessageHandler = replyHandler;
+            IsAllSentMessageHandler = isAllSentHandler;
+            AcknowledgeMessageHandler = acknowledge;
         }
     };
 }

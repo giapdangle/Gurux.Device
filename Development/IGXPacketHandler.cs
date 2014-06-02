@@ -83,6 +83,11 @@ namespace Gurux.Device
 		/// </summary>
         bool IsTransactionComplete(object sender, string command, Gurux.Communication.GXPacket packet);
 
+        /// <summary>
+        /// Called when event is received from the meter.
+        /// </summary>
+        void ExecuteNotifyCommand(object sender, string command, Gurux.Communication.GXPacket packet, byte[] data, string senderInfo);
+
         ///<summary>
         /// Convert UI value to device value.
         ///</summary>

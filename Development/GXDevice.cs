@@ -75,7 +75,6 @@ namespace Gurux.Device
 		/// Protocol Addin that device uses.
 		/// </summary>
 		internal GXProtocolAddIn m_AddIn;
-		internal GXEvents m_Events;
 		Gurux.Communication.GXClient m_GXClient = null;
 		private GXCategoryCollection m_Categories = null;
 		private GXTableCollection m_Tables = null;
@@ -144,7 +143,6 @@ namespace Gurux.Device
 		public GXDevice()
 		{
 			Keepalive = new GXKeepalive(this);
-			m_Events = new GXEvents();
 			this.GXClient = new GXClient();
 			Categories = new GXCategoryCollection();
 			Tables = new GXTableCollection();
@@ -162,7 +160,6 @@ namespace Gurux.Device
         protected override void OnDeserializing(bool designMode)
         {
             Keepalive = new GXKeepalive(this);
-            m_Events = new GXEvents();
             this.GXClient = new GXClient();
             Categories = new GXCategoryCollection();
             Tables = new GXTableCollection();
@@ -305,6 +302,7 @@ namespace Gurux.Device
         /// Obsolete. Use DeviceProfile.
         /// </summary>
         [DataMember(IsRequired = false)]
+        [ValueAccess(ValueAccessType.None, ValueAccessType.None)]
         public string DeviceType
         {
             get
@@ -641,10 +639,12 @@ namespace Gurux.Device
             GXDevice device = Load(path);
             device.Name = name;
 			device.Status = DeviceStates.Loaded;
+            /*Mikko tämä vie CPUTA
 			if (device.AllowedMediaTypes.Count == 0)
 			{
 				device.AllowedMediaTypes.AddRange(GXDeviceList.GetMediaTypes());
 			}
+             * */
 			return device;
 		}
 
@@ -950,19 +950,7 @@ namespace Gurux.Device
 			get;
 			set;
 		}
-
-		/// <summary>
-		/// Contains collection of GXTables ans GXCategories that function as device event listeners.
-		/// </summary>
-		[ValueAccess(ValueAccessType.None, ValueAccessType.None)]
-		public GXEvents Events
-		{
-			get
-			{
-				return m_Events;
-			}
-		}
-
+		
 		/// <summary>
 		/// The parent GXDeviceList.
 		/// </summary>
@@ -989,6 +977,16 @@ namespace Gurux.Device
                 this.Read(this);
             }
 		}
+
+        /// <summary>
+        /// Send reply to the device.
+        /// </summary>
+        /// <param name="data"></param>        
+        /// <param name="senderInfo"></param>
+        public void Reply(byte[] data, string senderInfo)
+        {
+            this.Reply(this, data, senderInfo);
+        }
 
 		/// <summary>
 		/// Write device.
@@ -1710,6 +1708,70 @@ namespace Gurux.Device
             }
         }
 
+        /// <summary>
+        /// Initialize device settings.
+        /// </summary>
+        public void Initialize()
+        {
+            if (PacketHandler == null)
+            {
+                if (this.m_AddIn == null)
+                {
+                    //If device is create without device list.
+                    if (this.ProtocolName == null)
+                    {
+                        foreach (Type type in GetType().Assembly.GetTypes())
+                        {
+                            if (typeof(GXProtocolAddIn).IsAssignableFrom(type))
+                            {
+                                this.m_AddIn = Activator.CreateInstance(type) as GXProtocolAddIn;
+                                break;
+                            }
+                        }
+                    }
+                    else
+                    {
+                        this.m_AddIn = GXDeviceList.Protocols[this.ProtocolName];
+                    }
+                }
+                UpdateAttributes(this);
+                if (GXDeviceList.EventHandlers == null)
+                {
+                    GXDeviceList.EventHandlers = new Dictionary<string, IGXEventHandler>();
+                }
+                lock (GXDeviceList.EventHandlers)
+                {
+                    IGXEventHandler handler;
+                    if (!GXDeviceList.EventHandlers.ContainsKey(m_AddIn.Name))
+                    {
+                        handler = GXDeviceList.EventHandlers[m_AddIn.Name] = null;
+                        foreach (Type type in GetType().Assembly.GetTypes())
+                        {
+                            if (typeof(IGXEventHandler).IsAssignableFrom(type))
+                            {
+                                handler = GXDeviceList.EventHandlers[m_AddIn.Name] = Activator.CreateInstance(type) as IGXEventHandler;
+                                handler.Clients = this;
+                                break;
+                            }
+                        }
+                    }
+                    else
+                    {
+                        handler = GXDeviceList.EventHandlers[m_AddIn.Name];
+                    }
+                    if (handler != null)
+                    {
+                        object list = this.DeviceList;
+                        if (list == null)
+                        {
+                            list = this;
+                        }
+                        GXClient.AddEventHandler(handler, list);
+                    }
+                }
+            }
+        }
+
 		/// <summary>
 		/// Opens connection.
 		/// </summary>
@@ -1717,6 +1779,40 @@ namespace Gurux.Device
 		{
             try
             {
+                if (GXDeviceList.EventHandlers == null)
+                {
+                    GXDeviceList.EventHandlers = new Dictionary<string, IGXEventHandler>();
+                }
+                lock (GXDeviceList.EventHandlers)
+                {
+                    IGXEventHandler handler;
+                    if (!GXDeviceList.EventHandlers.ContainsKey(m_AddIn.Name))
+                    {
+                        handler = GXDeviceList.EventHandlers[m_AddIn.Name] = null;
+                        foreach (Type type in GetType().Assembly.GetTypes())
+                        {
+                            if (typeof(IGXEventHandler).IsAssignableFrom(type))
+                            {
+                                handler = GXDeviceList.EventHandlers[m_AddIn.Name] = Activator.CreateInstance(type) as IGXEventHandler;
+                                handler.Clients = this;
+                                break;
+                            }
+                        }
+                    }
+                    else
+                    {
+                        handler = GXDeviceList.EventHandlers[m_AddIn.Name];
+                    }
+                    if (handler != null)
+                    {
+                        object list = this.DeviceList;
+                        if (list == null)
+                        {
+                            list = this;
+                        }
+                        GXClient.AddEventHandler(handler, list);
+                    }
+                }            
                 GXClient.Trace = this.Trace;
                 if (!Tracing && this.Trace != System.Diagnostics.TraceLevel.Off)
                 {
@@ -1959,7 +2055,7 @@ namespace Gurux.Device
 		/// <param name="initialTransaction"></param>
 		/// <param name="read"></param>
 		/// <returns>Returs False if if there are more items to read.</returns>
-		internal bool Execute(object sender, GXClient client, GXCommunicationMessageAttribute att, bool initialTransaction, bool read)
+		internal bool Execute(object sender, object parameters, GXClient client, GXCommunicationMessageAttribute att, bool initialTransaction, bool read)
 		{
             //If transaction is cancelled.
             if (IsCancelled)
@@ -2023,7 +2119,15 @@ namespace Gurux.Device
                     packets.Add(packet);
                     if (!string.IsNullOrEmpty(att.RequestMessageHandler))
                     {
-                        this.PacketHandler.ExecuteSendCommand(sender, att.RequestMessageHandler, packet);
+                        if (att is GXEventMessage)
+                        {
+                            object[] tmp = (object[])parameters;
+                            this.PacketHandler.ExecuteNotifyCommand(sender, att.RequestMessageHandler, packet, (byte[])tmp[0], (string)(tmp[1]));
+                        }
+                        else
+                        {
+                            this.PacketHandler.ExecuteSendCommand(sender, att.RequestMessageHandler, packet);
+                        }
                         //If there is no data to send.
                         if (packet.GetSize(PacketParts.Data) == 0)
                         {
@@ -2273,7 +2377,7 @@ namespace Gurux.Device
                                 GetCommunicationMessageAttributes(it, read ? typeof(GXReadMessage) : typeof(GXWriteMessage), attributes, false);
                                 if (attributes.Count == 0)
                                 {
-                                    if (!Execute(it, client, null, initialTransaction, read))
+                                    if (!Execute(it, parameters, client, null, initialTransaction, read))
                                     {
                                         break;
                                     }
@@ -2283,7 +2387,7 @@ namespace Gurux.Device
                                     foreach (var it2 in attributes)
                                     {
                                         TransactionObject = null;
-                                        if (!Execute(it2.Value, this.GXClient, it2.Key, true, read))
+                                        if (!Execute(it2.Value, parameters, this.GXClient, it2.Key, true, read))
                                         {
                                             break;
                                         }
@@ -2299,7 +2403,7 @@ namespace Gurux.Device
                                 GetCommunicationMessageAttributes(it, read ? typeof(GXReadMessage) : typeof(GXWriteMessage), attributes, false);
                                 if (attributes.Count == 0)
                                 {
-                                    if (!Execute(it, client, null, initialTransaction, read))
+                                    if (!Execute(it, parameters, client, null, initialTransaction, read))
                                     {
                                         break;
                                     }
@@ -2309,7 +2413,7 @@ namespace Gurux.Device
                                     foreach (var it2 in attributes)
                                     {
                                         TransactionObject = null;
-                                        if (!Execute(it2.Value, this.GXClient, it2.Key, true, read))
+                                        if (!Execute(it2.Value, parameters, this.GXClient, it2.Key, true, read))
                                         {
                                             break;
                                         }
@@ -2364,7 +2468,7 @@ namespace Gurux.Device
                                 {
                                     break;
                                 }
-								if (!Execute(it, client, cAtt.Key, initialTransaction, read))
+                                if (!Execute(it, parameters, client, cAtt.Key, initialTransaction, read))
 								{
 									return false;
 								}
@@ -2391,7 +2495,7 @@ namespace Gurux.Device
                             {
                                 break;
                             }
-							if (!Execute(device, client, cAtt.Key, initialTransaction, read))
+                            if (!Execute(device, parameters, client, cAtt.Key, initialTransaction, read))
 							{
 								return false;
 							}
@@ -2417,7 +2521,7 @@ namespace Gurux.Device
                                 GetCommunicationMessageAttributes(it, read ? typeof(GXReadMessage) : typeof(GXWriteMessage), attributes, false);
                                 foreach (var cAtt in attributes)
                                 {
-                                    if (!Execute(it, client, cAtt.Key, initialTransaction, read))
+                                    if (!Execute(it, parameters, client, cAtt.Key, initialTransaction, read))
                                     {
                                         break;
                                     }
@@ -2469,7 +2573,7 @@ namespace Gurux.Device
                             {
                                 break;
                             }
-							if (!Execute(device, client, cAtt.Key, initialTransaction, read))
+                            if (!Execute(device, parameters, client, cAtt.Key, initialTransaction, read))
 							{
 								return false;
 							}
@@ -2682,14 +2786,14 @@ namespace Gurux.Device
 				if (attributes.Count == 0)
 				{
 					TransactionObject = null;
-					Execute(sender, this.GXClient, null, true, true);
+                    Execute(sender, null, this.GXClient, null, true, true);
 				}
 				else
 				{
 					foreach (var it in attributes)
 					{
 						TransactionObject = null;
-						if (!Execute(it.Value, this.GXClient, it.Key, true, true))
+                        if (!Execute(it.Value, null, this.GXClient, it.Key, true, true))
 						{
 							break;
 						}
@@ -2778,14 +2882,14 @@ namespace Gurux.Device
 				if (attributes.Count == 0)
 				{
 					TransactionObject = null;
-					Execute(sender, this.GXClient, null, true, false);
+                    Execute(sender, null, this.GXClient, null, true, false);
 				}
 				else
 				{
 					foreach (var it in attributes)
 					{
 						TransactionObject = null;
-						Execute(it.Value, this.GXClient, it.Key, true, false);
+                        Execute(it.Value, null, this.GXClient, it.Key, true, false);
 					}
 				}
 			}
@@ -2799,7 +2903,7 @@ namespace Gurux.Device
                 //Reset cancel.
                 IsCancelled = false;
 				System.Threading.Monitor.Exit(m_transactionsync);
-				//Reset Reading flag.
+				//Reset writing flag.
 				if (!writing)
 				{
 					this.Status &= ~DeviceStates.Writing;
@@ -2825,6 +2929,103 @@ namespace Gurux.Device
 				}
 			}
 		}
+        
+        /// <summary>
+        /// Device sends reply to the meter.
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="data"></param>
+        /// <param name="senderInfo"></param>
+        internal void Reply(object sender, byte[] data, string senderInfo)
+        {
+            //Wait until keepalive is ended.
+            if (!System.Threading.Monitor.TryEnter(m_transactionsync, this.WaitTime))
+            {
+                throw new Exception(Resources.TransactionIsAlreadyInProgress);
+            }
+            bool writing = false;
+            try
+            {
+                if ((this.Status & (DeviceStates.Reading | DeviceStates.Writing)) != 0)
+                {
+                    throw new Exception(Resources.TransactionIsAlreadyInProgress);
+                }
+                writing = (this.Status & DeviceStates.Writing) != 0;
+                if (!writing)
+                {
+                    this.Status |= DeviceStates.Writing;
+                    if (sender is GXCategory)
+                    {
+                        GXCategory cat = sender as GXCategory;
+                        cat.NotifyUpdated(cat, new GXCategoryEventArgs(cat, CategoryStates.WriteStart));
+                    }
+                    else if (sender is GXTable)
+                    {
+                        GXTable table = sender as GXTable;
+                        table.NotifyUpdated(table, new GXTableEventArgs(table, TableStates.WriteStart, 0, null));
+                    }
+                    else if (sender is GXProperty)
+                    {
+                        GXProperty prop = sender as GXProperty;
+                        prop.NotifyUpdated(new GXPropertyEventArgs(prop, PropertyStates.WriteStart));
+                    }
+                    else if (sender is GXDevice)
+                    {
+                        NotifyUpdated(this, new GXDeviceEventArgs(this, DeviceStates.WriteStart));
+                    }
+                }
+                List<KeyValuePair<GXCommunicationMessageAttribute, object>> attributes = new List<KeyValuePair<GXCommunicationMessageAttribute, object>>();
+                GetCommunicationMessageAttributes(sender, typeof(GXEventMessage), attributes, false);
+                if (attributes.Count == 0)
+                {
+                    TransactionObject = null;
+                    Execute(sender, senderInfo, this.GXClient, null, true, false);
+                }
+                else
+                {
+                    foreach (var it in attributes)
+                    {
+                        TransactionObject = null;
+                        Execute(it.Value, new object[]{data, senderInfo}, this.GXClient, it.Key, true, false);
+                    }
+                }
+            }
+            catch (Exception Ex)
+            {
+                this.Status |= DeviceStates.Error;
+                throw Ex;
+            }
+            finally
+            {
+                //Reset cancel.
+                IsCancelled = false;
+                System.Threading.Monitor.Exit(m_transactionsync);
+                //Reset writing flag.
+                if (!writing)
+                {
+                    this.Status &= ~DeviceStates.Writing;
+                    if (sender is GXCategory)
+                    {
+                        GXCategory cat = sender as GXCategory;
+                        cat.NotifyUpdated(cat, new GXCategoryEventArgs(cat, CategoryStates.WriteEnd));
+                    }
+                    else if (sender is GXTable)
+                    {
+                        GXTable table = sender as GXTable;
+                        table.NotifyUpdated(table, new GXTableEventArgs(table, TableStates.WriteEnd, 0, null));
+                    }
+                    else if (sender is GXProperty)
+                    {
+                        GXProperty prop = sender as GXProperty;
+                        prop.NotifyUpdated(new GXPropertyEventArgs(prop, PropertyStates.WriteEnd));
+                    }
+                    else if (sender is GXDevice)
+                    {
+                        NotifyUpdated(this, new GXDeviceEventArgs(this, DeviceStates.WriteEnd));
+                    }
+                }
+            }
+        }
 
 		internal void ExecuteInitialAction(InitialActionType type)
 		{
@@ -2844,7 +3045,7 @@ namespace Gurux.Device
                     foreach (GXInitialActionMessage it in GetInitialCommunicationMessageAttributes(this, type))
                     {
                         TransactionObject = null;
-                        Execute(this, this.GXClient, it, true, true);
+                        Execute(this, null, this.GXClient, it, true, true);
                         //If transaction is cancelled.
                         if (IsCancelled)
                         {

@@ -55,5 +55,5 @@ using System.Runtime.InteropServices;
 [assembly: Guid("1b2771cc-d730-4997-8c95-9b6a3d6718cc")]
 
 [assembly: AssemblyVersion("7.0.2.1")] //DO NOT CHANGE!
-[assembly: AssemblyFileVersion("7.1.5.1")]
+[assembly: AssemblyFileVersion("7.1.6.1")]
 [assembly: System.Resources.NeutralResourcesLanguage("en")]

@@ -573,7 +573,6 @@ namespace Gurux.Device
         [DataMember(IsRequired = false, EmitDefaultValue = false)]
         [ValueAccess(ValueAccessType.Edit, ValueAccessType.None)]
         [Editor(typeof(GXValueCollectionEditor), typeof(System.Drawing.Design.UITypeEditor))]
-        //[Browsable(false), ReadOnly(true)]
         public virtual GXValueItemCollection Values
         {
             get;
@@ -828,6 +827,16 @@ namespace Gurux.Device
             {
                 this.Device.Write(this);
             }
+        }
+
+        /// <summary>
+        /// Send reply to the meter.
+        /// </summary>
+        /// <param name="data"></param>
+        /// <param name="senderInfo"></param>
+        public void Reply(byte[] data, string senderInfo)
+        {
+            this.Device.Reply(this, data, senderInfo);
         }
 
 		/// <summary>

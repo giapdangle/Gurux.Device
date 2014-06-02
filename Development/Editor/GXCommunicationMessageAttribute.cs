@@ -43,27 +43,13 @@ namespace Gurux.Device.Editor
     [AttributeUsage(AttributeTargets.Class, AllowMultiple = true, Inherited = true)]
     public abstract class GXCommunicationMessageAttribute : System.Attribute
     {
-
-        internal string m_RequestMessageHandler = null;
-        internal string m_ReplyMessageHandler = null;
-        internal string m_IsAllSentMessageHandler = null;
-        internal string m_AcknowledgeMessageHandler = null;
-        internal bool m_EnableParentRead = true;
-
-
         /// <summary>
         /// Is parent read used.
         /// </summary>
         public bool EnableParentRead
         {
-            get
-            {
-                return m_EnableParentRead;
-            }
-            set
-            {
-                m_EnableParentRead = value;
-            }
+            get;            
+            set;
         }
 
         /// <summary>
@@ -80,10 +66,8 @@ namespace Gurux.Device.Editor
         /// </summary>
         public string RequestMessageHandler
         {
-            get
-            {
-                return m_RequestMessageHandler;
-            }
+            get;
+            internal set;
         }
 
         /// <summary>
@@ -91,10 +75,8 @@ namespace Gurux.Device.Editor
         /// </summary>
         public string ReplyMessageHandler
         {
-            get
-            {
-                return m_ReplyMessageHandler;
-            }
+            get;
+            internal set;            
         }
 
         /// <summary>
@@ -102,10 +84,8 @@ namespace Gurux.Device.Editor
         /// </summary>
         public string IsAllSentMessageHandler
         {
-            get
-            {
-                return m_IsAllSentMessageHandler;
-            }
+            get;
+            internal set;
         }
 
         /// <summary>
@@ -113,14 +93,8 @@ namespace Gurux.Device.Editor
         /// </summary>
         public string AcknowledgeMessageHandler
         {
-            get
-            {
-                return m_AcknowledgeMessageHandler;
-            }
-            set
-            {
-                m_AcknowledgeMessageHandler = value;
-            }
+            get;
+            internal set;
         }
 
         /// <summary>
@@ -129,7 +103,7 @@ namespace Gurux.Device.Editor
         public string TimeoutMessageHandler
         {
             get;
-            set;
+            internal set;
         }
     };
 }
