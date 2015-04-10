@@ -114,6 +114,22 @@ namespace Gurux.Device
             m_UIValues = new List<object[]>();
         }
 
+        /// <summary>
+        /// Table type used in serialization.
+        /// </summary>
+        [DataMember(Name = "TType", IsRequired = true)]
+        internal string TableType
+        {
+            get
+            {
+                return this.GetType().FullName;
+            }
+            set
+            {
+
+            }
+        }
+
 		/// <summary>
 		/// Sets the sorting column.
 		/// </summary>

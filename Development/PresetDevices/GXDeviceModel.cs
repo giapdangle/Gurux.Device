@@ -25,7 +25,7 @@ namespace Gurux.Device.PresetDevices
             Versions = new GXDeviceVersionCollection(this);
             Description = null;
         }
-
+        
         /// <summary>
         /// Copy Constructor.
         /// </summary>
@@ -38,7 +38,7 @@ namespace Gurux.Device.PresetDevices
             {
                 Versions.Add(new GXDeviceVersion(it));
             }
-        }       
+        }               
 
         /// <summary>
         /// Parent collection of device model.
@@ -95,17 +95,6 @@ namespace Gurux.Device.PresetDevices
                     m_Versions.Parent = this;
                 }
             }
-        }
-
-        /// <summary>
-        /// Download status.
-        /// </summary>
-        [DefaultValue(DownloadStates.None)]
-        [DataMember(IsRequired = false, EmitDefaultValue = false)]
-        public DownloadStates Status
-        {
-            get;
-            set;
         }
     }
 }

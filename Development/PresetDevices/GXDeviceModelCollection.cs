@@ -14,7 +14,7 @@ namespace Gurux.Device.PresetDevices
     /// </summary>
     [CollectionDataContract()]
     [Serializable]
-    public class GXDeviceModelCollection : GenericList<GXDeviceModel>
+    public class GXDeviceModelCollection : GenericList<GXDeviceModel>, System.Collections.IList
     {
         /// <summary>
         /// Constructor.
@@ -37,7 +37,10 @@ namespace Gurux.Device.PresetDevices
 		/// </summary>
         protected override void OnBeforeItemAdded(object sender, GenericItemEventArgs<GXDeviceModel> e)
         {
-            e.Item.Parent = this;
+            if (e.Item != null && e.Item.Parent == null)
+            {
+                e.Item.Parent = this;
+            }            
         }
 
         /// <summary>

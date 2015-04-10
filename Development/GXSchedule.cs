@@ -45,7 +45,7 @@ namespace Gurux.Device
 	/// <summary>
 	/// A scheduling component used for repeating tasks for GXDevice and related components.
 	/// </summary>
-    [DataContract()]    
+    [DataContract(), Serializable]    
     public class GXSchedule : Gurux.Device.Editor.GXSite
     {
         #region Parameters

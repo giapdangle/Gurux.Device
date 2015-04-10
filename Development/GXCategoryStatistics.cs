@@ -44,7 +44,8 @@ namespace Gurux.Device
 	/// </remarks>
 	/// <seealso cref="GXCategory.GetStatistic">GetStatistic</seealso>
 	/// <seealso cref="GXCategory.ResetStatistic">ResetStatistic</seealso>
-	public class GXCategoryStatistics
+	[Serializable]
+    public class GXCategoryStatistics
 	{
 		/// <summary>
 		/// Reset statistics.

@@ -490,6 +490,14 @@ namespace Gurux.Device
     /// <param name="sender">The item that is executed.</param>
 	/// <param name="e">Event arguments</param>
 	public delegate void TransactionProgressEventHandler(object sender, GXTransactionProgressEventArgs e);
+
+    /// <summary>
+    /// Notified when user selects device profile.
+    /// </summary>
+    /// <param name="target">Selected device or device profile.</param>
+    /// <param name="e">Device profile parameters.</param>
+    public delegate void ProfileSelectEventHandler(object target, GXSelectDeviceProfileEventArgs e);
+
 #endregion
 		
 #region DeviceEvents

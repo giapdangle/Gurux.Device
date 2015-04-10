@@ -198,7 +198,7 @@ namespace Gurux.Device
         [XmlEnum("33554432")]
         DeviceSettings = 0x2000000,
         /// <summary>
-        /// Keepalive 
+        /// Keep alive 
         /// </summary>
         [XmlEnum("67108864")]
         Keepalive = 0x4000000,

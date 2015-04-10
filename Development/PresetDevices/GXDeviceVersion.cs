@@ -11,20 +11,28 @@ using Gurux.Device.PresetDevices;
 namespace Gurux.Device.PresetDevices
 {
     /// <summary>
+    /// Obsolete.
+    /// </summary>
+    class GXPublishedDeviceType : GXDeviceProfile
+    {
+
+    }
+
+    /// <summary>
     /// Device version.
     /// </summary>
     [DataContract()]
     [Serializable]
     public class GXDeviceVersion
     {
-        GXPublishedDeviceProfileCollection m_Templates;
+        GXDeviceProfileCollection m_Profiles;
 
         /// <summary>
         /// Constructor.
         /// </summary>
         public GXDeviceVersion()
         {
-            Templates = new GXPublishedDeviceProfileCollection(this);
+            Profiles = new GXDeviceProfileCollection(this);
         }
 
         /// <summary>
@@ -33,9 +41,9 @@ namespace Gurux.Device.PresetDevices
         public GXDeviceVersion(string name)
         {
             Name = name;
-            m_Templates = new GXPublishedDeviceProfileCollection(this);
+            m_Profiles = new GXDeviceProfileCollection(this);
         }
-
+        
         /// <summary>
         /// Copy Constructor.
         /// </summary>
@@ -43,10 +51,10 @@ namespace Gurux.Device.PresetDevices
         {
             Name = item.Name;
             Description = item.Description;
-            m_Templates = new GXPublishedDeviceProfileCollection(this);
-            foreach (GXPublishedDeviceProfile it in item.Templates)
+            m_Profiles = new GXDeviceProfileCollection(this);
+            foreach (GXDeviceProfile it in item.Profiles)
             {
-                m_Templates.Add(new GXPublishedDeviceProfile(it));
+                m_Profiles.Add(it);
             }
         }
 
@@ -91,31 +99,20 @@ namespace Gurux.Device.PresetDevices
         /// Supported device templates.
         /// </summary>
         [DataMember(IsRequired = false, EmitDefaultValue = false)]
-        public GXPublishedDeviceProfileCollection Templates
+        public GXDeviceProfileCollection Profiles
         {
             get
             {
-                return m_Templates;
+                return m_Profiles;
             }
             internal set
             {
-                m_Templates = value;
-                if (m_Templates != null)
+                m_Profiles = value;
+                if (m_Profiles != null)
                 {
-                    m_Templates.Parent = this;
+                    m_Profiles.Parent = this;
                 }
             }
-        }
-        
-        /// <summary>
-        /// Download status.
-        /// </summary>
-        [DefaultValue(DownloadStates.None)]
-        [DataMember(IsRequired = false, EmitDefaultValue = false)]
-        public DownloadStates Status
-        {
-            get;
-            set;
-        }
+        }       
     }
 }

@@ -35,6 +35,9 @@ using System.Collections.Generic;
 using System.Text;
 using System.Xml.Serialization;
 using System.Runtime.Serialization;
+using System.IO;
+using System.Xml;
+using Gurux.Common;
 
 namespace Gurux.Device
 {
@@ -43,7 +46,7 @@ namespace Gurux.Device
 	/// </summary>
     [CollectionDataContract()]
     [Serializable]
-    public class GXDeviceProfileCollection : List<GXDeviceProfile>
+    public class GXDeviceProfileCollection : GenericList<GXDeviceProfile>
     {
         /// <summary>
         /// Constructor.
@@ -102,54 +105,99 @@ namespace Gurux.Device
             internal set;
         }
 
+        protected override void OnBeforeItemAdded(object sender, GenericItemEventArgs<GXDeviceProfile> e)
+        {
+            if (e.Item.Parent == null)
+            {
+                e.Item.Parent = this;
+            }
+        }
+
         /// <summary>
-        /// Add the specified value.
+        /// Remove item ID and parent. 
         /// </summary>
-        /// <param name='item'>
-        /// added item.
-        /// </param>
+        protected override void OnBeforeItemRemoved(object sender, GenericItemEventArgs<GXDeviceProfile> e)
+        {
+            if (e.Item.Parent == this)
+            {                
+                e.Item.Parent = null;
+            }
+        }
+
+
+        /// <summary>
+        /// Get devices by publish date.
+        /// </summary>
+        /// <param name="dt">Lower publish date.</param>
+        /// <returns>Collection of published devices.</returns>
+        public GXDeviceProfileCollection GetDevicesByPublishDate(DateTime dt)
+        {
+            GXDeviceProfileCollection items = new GXDeviceProfileCollection();
+            foreach (GXDeviceProfile it in this)
+            {
+                if (it.Date > dt)
+                {
+                    items.Add(it);
+                }
+            }
+            return items;
+        }      
+
+        /// <summary>
+        /// Find device profile by protocol name and profile name.
+        /// </summary>
+        /// <param name="protocol">Protocol name.</param>
+        /// <param name="profile">Profile name.</param>
+        /// <returns>Found device profile or null if not found.</returns>
+        public GXDeviceProfile Find(string protocol, string profile)
+        {
+            foreach (GXDeviceProfile type in this)
+            {
+                if (string.Compare(protocol, type.Protocol, true) == 0 &&
+                    string.Compare(profile, type.Name, true) == 0)
+                {
+                    return type;
+                }
+            }
+            return null;
+        }
+
+        /// <summary>
+        /// Find device profile.
+        /// </summary>
+        /// <param name="guid">Guid to find</param>
+        /// <returns>Device profile.</returns>
+        public GXDeviceProfile Find(Guid guid)
+        {
+            foreach (GXDeviceProfile type in this)
+            {
+                if (type.Guid == guid)
+                {
+                    return type;
+                }
+            }
+            return null;
+        }
+
+        /// <summary>
+        /// Find device profile(s) by target Guid.
+        /// </summary>
+        /// <param name="guid">Guid to find</param>
+        /// <returns>Device profiles.</returns>
         /// <remarks>
-        /// Mono needs this. Do not remove!
+        /// There might be several versions from same profile
         /// </remarks>
-        public new void Add(GXDeviceProfile item)
+        public GXDeviceProfile[] FindProfiles(Guid guid)
         {
-            GXDeviceProfile it = item as GXDeviceProfile;
-            if (it.Parent == null)
+            List<GXDeviceProfile> items = new List<GXDeviceProfile>();
+            foreach (GXDeviceProfile it in this)
             {
-                it.Parent = this;
-            }
-            base.Add(it);
-        }
-
-
-        /// <summary>
-        /// Find device template by preset name.
-        /// </summary>
-        /// <param name="publishedName">Name of preset device template.</param>
-        /// <returns>Found device template item.</returns>
-        public GXDeviceProfile Find(string presetName)
-        {
-            foreach (GXDeviceProfile type in this)
-            {
-                if (string.Compare(presetName, type.PresetName, true) == 0)
+                if (it.ProfileGuid == guid)
                 {
-                    return type;
+                    items.Add(it);
                 }
             }
-            return null;
-        }
-
-        public GXDeviceProfile Find(string protocolName, string deviceType)
-        {
-            foreach (GXDeviceProfile type in this)
-            {
-                if (string.Compare(protocolName, type.Protocol, true) == 0 &&
-                    string.Compare(deviceType, type.Name, true) == 0)
-                {
-                    return type;
-                }
-            }
-            return null;
-        }
+            return items.ToArray();
+        }             
     }
 }

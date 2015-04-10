@@ -181,7 +181,7 @@ namespace Gurux.Device.Editor
 
 		private static void CreateDeviceNode(GXDevice device, object target, long UsedDataSources, out TreeNode deviceNode, ref TreeNode selNode)
 		{
-			deviceNode = new TreeNode(device.DeviceProfile, 0, 0);
+			deviceNode = new TreeNode(GXDeviceList.DeviceProfiles.Find(device.ProfileGuid).Name, 0, 0);
 			deviceNode.Tag = device;
 			if (target == device)
 			{

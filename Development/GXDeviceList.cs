@@ -32,7 +32,6 @@
 
 using System;
 using System.Collections.Generic;
-using System.Text;
 using System.ComponentModel;
 using System.Xml;
 using System.Runtime.Serialization;
@@ -41,10 +40,9 @@ using Gurux.Device.Editor;
 using System.IO;
 using Quartz;
 using Quartz.Impl;
-using Gurux.Common;
-using Gurux.Device.PresetDevices;
 using Gurux.Device.Properties;
 using Gurux.Communication;
+using Gurux.Common.JSon;
 
 namespace Gurux.Device
 {    
@@ -55,7 +53,7 @@ namespace Gurux.Device
     [GXDataIOSourceAttribute(true, GXDataIOSourceType.DeviceList, GXDeviceList.AvailableTargets.All)]
     public class GXDeviceList : GXSite, IDisposable, INotifyPropertyChanged
     {
-        internal static Dictionary<string, IGXEventHandler> EventHandlers;
+        internal static Dictionary<Guid, IGXEventHandler> EventHandlers;
         [DataMember(Name = "Name", IsRequired = false, EmitDefaultValue = false)]
         string m_Name;
         [DataMember(Name = "CustomUI", IsRequired = false, EmitDefaultValue = false)]
@@ -85,7 +83,7 @@ namespace Gurux.Device
             {
                 if (EventHandlers == null)
                 {
-                    EventHandlers = new Dictionary<string, IGXEventHandler>();
+                    EventHandlers = new Dictionary<Guid, IGXEventHandler>();
                 }
             }
         }
@@ -101,7 +99,7 @@ namespace Gurux.Device
             {
                 if (EventHandlers == null)
                 {
-                    EventHandlers = new Dictionary<string, IGXEventHandler>();
+                    EventHandlers = new Dictionary<Guid, IGXEventHandler>();
                 }
             }
         }
@@ -209,36 +207,76 @@ namespace Gurux.Device
         }
 
 		/// <summary>
-		/// Update protocols and preset devices.
+		/// Update protocols and downloadable profiles.
 		/// </summary>
         static public void Update(string path)
         {
             m_Protocols = FindProtocols(path);
-            if (m_PresetDevices == null)
+            if (m_PublishedDevices == null)
             {
-                m_PresetDevices = new GXDeviceManufacturerCollection();
+                m_PublishedDevices = GXJsonParser.Load<GXDeviceProfileCollection>(DeviceProfilesPath);                
             }
-            GXDeviceManufacturerCollection.Load(m_PresetDevices);
+            else
+            {
+                m_PublishedDevices.Clear();
+                m_PublishedDevices.AddRange(GXJsonParser.Load<GXDeviceProfileCollection>(DeviceProfilesPath));                
+            }
         }
 
-        static GXDeviceManufacturerCollection m_PresetDevices;
         /// <summary>
-        /// Contains list of available GXProtocolAddIns.
+        /// Path where published profiles are saved.
         /// </summary>
-        [Browsable(false)]
-        public static GXDeviceManufacturerCollection PresetDevices
+        public static string DeviceProfilesPath
         {
             get
             {
-                if (m_PresetDevices == null)
+                string path = string.Empty;
+                if (Environment.OSVersion.Platform == PlatformID.Unix)
                 {
-                    m_PresetDevices = new GXDeviceManufacturerCollection();
-                    GXDeviceManufacturerCollection.Load(m_PresetDevices);
+                    path = Environment.GetFolderPath(Environment.SpecialFolder.Personal);
+                    path = Path.Combine(path, ".Gurux");
                 }
-                return m_PresetDevices;
+                else
+                {
+                    //Vista: C:\ProgramData
+                    //XP: c:\Program Files\Common Files                
+                    //XP = 5.1 & Vista = 6.0
+                    if (Environment.OSVersion.Version.Major >= 6)
+                    {
+                        path = Environment.GetFolderPath(Environment.SpecialFolder.CommonApplicationData);
+                    }
+                    else
+                    {
+                        path = Environment.GetFolderPath(Environment.SpecialFolder.CommonProgramFiles);
+                    }
+                    path = Path.Combine(path, "Gurux");
+                }
+                path = Path.Combine(path, "Devices");
+                return Path.Combine(path, "Profiles.json");
             }
         }
-
+        static GXDeviceProfileCollection m_PublishedDevices;
+        
+        /// <summary>
+        /// Contains list of available device profiles.
+        /// </summary>
+        [Browsable(false)]
+        public static GXDeviceProfileCollection DeviceProfiles
+        {
+            get
+            {
+                if (m_PublishedDevices == null)
+                {
+                    m_PublishedDevices = GXJsonParser.Load<GXDeviceProfileCollection>(DeviceProfilesPath);
+                    //If file not found.
+                    if (m_PublishedDevices == null)
+                    {
+                        m_PublishedDevices = new GXDeviceProfileCollection();
+                    }
+                }
+                return m_PublishedDevices;
+            }
+        }
 
 		/// <summary>
 		/// Contains list of available GXProtocolAddIns.
@@ -569,22 +607,7 @@ namespace Gurux.Device
             return m_MediaTypes;
         }
 
-        static string GetProfilePath()
-        {
-            string path = GXCommon.ApplicationDataPath;
-            if (Environment.OSVersion.Platform == PlatformID.Unix)
-            {
-                path = System.IO.Path.Combine(path, ".Gurux");
-            }
-            else
-            {
-                path = System.IO.Path.Combine(path, "Gurux");
-            }
-            path = System.IO.Path.Combine(path, "Devices");
-            path = System.IO.Path.Combine(path, "profiles.xml");
-            return path;
-        }
-
+        /*
         internal static void SaveDeviceProfiles(GXDeviceProfileCollection list)
         {
             XmlWriterSettings settings = new XmlWriterSettings();
@@ -593,7 +616,7 @@ namespace Gurux.Device
             settings.CloseOutput = true;
             settings.CheckCharacters = false;
             DataContractSerializer x = new DataContractSerializer(typeof(GXDeviceProfileCollection));
-            string path = GetProfilePath();
+            string path = DeviceProfilesPath;
             using (XmlWriter writer = XmlWriter.Create(path, settings))
             {
                 x.WriteObject(writer, list);
@@ -601,54 +624,11 @@ namespace Gurux.Device
             Gurux.Common.GXFileSystemSecurity.UpdateFileSecurity(path);
         }
 
-        internal static GXDeviceProfileCollection LoadDeviceProfiles()
+        private static GXDeviceProfileCollection LoadDeviceProfiles()
         {
             GXDeviceProfileCollection items = new GXDeviceProfileCollection(null);
-            string TemplatePath = GetProfilePath();
-            bool profilesFileExists = System.IO.File.Exists(TemplatePath);
-            bool oldWay = !profilesFileExists && System.IO.File.Exists(Path.GetDirectoryName(TemplatePath) + "Templates.xml");
-            //if old way.
-            if (oldWay)
-            {
-                Gurux.Device.Editor.GXTemplateManager m = new Gurux.Device.Editor.GXTemplateManager();
-                foreach (Gurux.Device.Editor.GXTemplateManager.GXTemplateManagerItem it in m.AvailableTemplates(null).List)
-                {
-                    GXDeviceProfile item = new GXDeviceProfile();
-                    item.Protocol = it.Parent.Protocol;
-                    item.Name = it.Name;
-                    GXDevice device;
-                    //Try to load file. Remove it if not exists.
-                    try
-                    {
-                        device = GXDevice.Load(it.Path);
-                    }
-                    catch (Exception)
-                    {
-                        continue;
-                    }
-                    device.Save(device.ProfilePath);
-                    item.DeviceGuid = device.Guid;
-                    GXDevice newDevice = GXDevice.Load(device.ProfilePath);
-                    PropertyDescriptorCollection properties = TypeDescriptor.GetProperties(device);
-                    foreach (PropertyDescriptor p in properties)
-                    {
-                        if (!p.IsReadOnly)
-                        {
-                            object value = p.GetValue(device);
-                            object value2 = p.GetValue(newDevice);
-                            if (value == null && value2 == null)
-                            {
-                            }
-                            else if (!value.Equals(value2))
-                            {
-                                System.Diagnostics.Debug.WriteLine("Wrong value " + p.Name + " " + value.ToString() + " " + value2.ToString());
-                            }
-                        }
-                    }
-                    items.Add(item);
-                };
-            }
-            else if (profilesFileExists)
+            string TemplatePath = DeviceProfilesPath;
+            if (System.IO.File.Exists(TemplatePath))
             {
                 DataContractSerializer x = new DataContractSerializer(typeof(GXDeviceProfileCollection));
                 using (FileStream reader = new FileStream(TemplatePath, FileMode.Open, FileAccess.Read, FileShare.Read))
@@ -665,44 +645,7 @@ namespace Gurux.Device
             }
             return items;
         }
-
-        /// <summary>
-        /// DeviceTypes is the collection of device types that are registered to the computer.
-        /// </summary>
-        /// <remarks>
-        /// With the DeviceTypes collection you can easily figure out, what device type templates are registered to the computer.
-        /// With GXPublisher you can easily see registered device types. If the name of the protocol is empty,
-        /// all the protocols are returned, otherwise only the ones under it.
-        /// </remarks>
-        /// <param name="preset">Are preset device get.</param>
-        /// <param name="protocol">The name of the protocol.</param>
-        /// <returns>Collection of device types.</returns> 
-        static public GXDeviceProfileCollection GetDeviceTypes(bool preset, string protocol)
-        {
-            GXDeviceProfileCollection items = null;
-            if (preset)
-            {
-                items = new GXDeviceProfileCollection(null);
-                foreach (GXDeviceManufacturer man in GXDeviceList.PresetDevices)
-                {
-                    foreach (GXDeviceModel model in man.Models)
-                    {
-                        foreach (GXDeviceVersion version in model.Versions)
-                        {
-                            foreach (GXDeviceProfile type in version.Templates)
-                            {
-                                items.Add(type);
-                            }
-                        }
-                    }
-                }
-            }
-            else
-            {
-                items = LoadDeviceProfiles();               
-            }
-            return items;
-        }       
+         * */
 
         /// <summary>
         /// CanChangeSelectedItem asks device list clients, if it is OK to change to a new item.
@@ -760,62 +703,87 @@ namespace Gurux.Device
             }
         }
 
+        private static void ParserOnCreateObject(object sender, GXCreateObjectEventArgs e)
+        {
+            if (typeof(GXSerializedDevice) == e.Type)
+            {
+                e.Object = new GXSerializedDevice();
+            }
+            else if (typeof(GXDeviceList) == e.Type)
+            {
+                e.Object = new GXDeviceList();
+            }
+            else if (typeof(GXDeviceGroup) == e.Type)
+            {
+                e.Object = new GXDeviceGroup();
+            }
+            else
+            {
+                e.Object = null;
+            }
+        }
+
         /// <summary>
         /// Load device list from xml file.
         /// </summary>
         /// <param name="path"></param>
         public void Load(string path)
         {
-
             try
             {
                 NotifyLoadBegin();
                 IsLoading = true;
                 ++FreezeEvents;
-                Clear();
-                Type deviceType = null;
-                bool isJson = true;
-                using (TextReader reader = File.OpenText(path))
-                {
-                    //Valid XML starts always with '<'
-                    isJson = reader.Peek() != '<';
-                }
+                Clear();                
+                GXDeviceList list;
                 GXSite site;
-                System.Collections.Generic.List<Type> types = new System.Collections.Generic.List<Type>();
-                if (System.Environment.OSVersion.Platform != PlatformID.Unix)
+                if (GXJsonParser.IsJSONFile(path))
                 {
-                    foreach (GXProtocolAddIn it in GXDeviceList.Protocols.Values)
-                    {
-                        GetAddInInfo(it, out deviceType, types);
-                    }
+                    GXJsonParser parser = new GXJsonParser();
+                    parser.OnCreateObject += new CreateObjectEventhandler(ParserOnCreateObject);
+                    list = parser.LoadFile(path, typeof(GXDeviceList)) as GXDeviceList;
+                    parser.OnCreateObject -= new CreateObjectEventhandler(ParserOnCreateObject);
                 }
-                using (FileStream reader = new FileStream(path, FileMode.Open))
+                else
                 {
-                    DataContractSerializer x = new DataContractSerializer(this.GetType(), types.ToArray());
-                    GXDeviceList list = (GXDeviceList)x.ReadObject(reader);
-                    list.m_sched = null;
-                    this.Name = list.Name;
-                    this.CustomUI = list.CustomUI;
-                    //Move items to other collection.
-                    this.DeviceGroups.AddRange(list.DeviceGroups);
-                    foreach (GXDeviceGroup it in this.DeviceGroups)
+                    Type deviceType = null;                    
+                    System.Collections.Generic.List<Type> types = new System.Collections.Generic.List<Type>();
+                    if (System.Environment.OSVersion.Platform != PlatformID.Unix)
                     {
-                        it.Parent = this.DeviceGroups;
+                        foreach (GXProtocolAddIn it in GXDeviceList.Protocols.Values)
+                        {
+                            GetAddInInfo(it, out deviceType, types);
+                        }
                     }
-                    list.DeviceGroups.Clear();
-                    //Move items to other collection.
-                    this.Schedules.AddRange(list.Schedules);
-                    foreach (GXSchedule it in this.Schedules)
+                    using (FileStream reader = new FileStream(path, FileMode.Open))
                     {
-                        it.Parent = this.Schedules;
-                        site = it as GXSite;
-                        site.NotifySerialized(false);
-                    }
-                    list.Schedules.Clear();
-                    this.DisabledActions = list.DisabledActions;
-                    reader.Close();
+                        DataContractSerializer x = new DataContractSerializer(this.GetType(), types.ToArray());
+                        list = (GXDeviceList)x.ReadObject(reader);
+                        reader.Close();
+                    }                       
                 }
-                NotifySerialized(false, this.DeviceGroups);
+                list.m_sched = null;
+                this.Name = list.Name;
+                this.CustomUI = list.CustomUI;
+                //Move items to other collection.
+                this.DeviceGroups.AddRange(list.DeviceGroups);
+                foreach (GXDeviceGroup it in this.DeviceGroups)
+                {
+                    it.Parent = this.DeviceGroups;
+                }
+                list.DeviceGroups.Clear();
+                //Move items to other collection.
+                this.Schedules.AddRange(list.Schedules);
+                foreach (GXSchedule it in this.Schedules)
+                {
+                    it.Parent = this.Schedules;
+                    site = it as GXSite;
+                    site.NotifySerialized(false);
+                }
+                list.Schedules.Clear();
+                this.DisabledActions = list.DisabledActions;
+
+                NotifySerialized(false, this.DeviceGroups);                
                 site = this as GXSite;
                 site.NotifySerialized(false);
                 foreach (GXSchedule schedule in this.Schedules)
@@ -846,14 +814,14 @@ namespace Gurux.Device
                 foreach(GXDevice it in this.DeviceGroups.GetDevicesRecursive())
                 {
                     IGXEventHandler handler;
-                    if (!EventHandlers.ContainsKey(it.DeviceProfile))
+                    if (!EventHandlers.ContainsKey(it.ProfileGuid))
                     {
-                        handler = EventHandlers[it.DeviceProfile] = null;
+                        handler = EventHandlers[it.ProfileGuid] = null;
                         foreach (Type type in it.GetType().Assembly.GetTypes())
                         {
                             if (typeof(IGXEventHandler).IsAssignableFrom(type))
                             {
-                                handler = EventHandlers[it.DeviceProfile] = Activator.CreateInstance(type) as IGXEventHandler;
+                                handler = EventHandlers[it.ProfileGuid] = Activator.CreateInstance(type) as IGXEventHandler;
                                 handler.Clients = this;
                                 break;
                             }
@@ -861,9 +829,12 @@ namespace Gurux.Device
                     }
                     else
                     {
-                        handler = EventHandlers[it.DeviceProfile];
+                        handler = EventHandlers[it.ProfileGuid];
                     }
-                    it.GXClient.AddEventHandler(handler, this);
+                    if (handler != null)
+                    {
+                        it.GXClient.AddEventHandler(handler, this);
+                    }
                 }
                 this.FileName = path;                
                 this.Dirty = false;
@@ -909,30 +880,39 @@ namespace Gurux.Device
 		/// <summary>
 		/// Serialize the GXDevicelist to a XML file.
 		/// </summary>
-        public void Save(string filePath)
+        /// <param name="json">Is data saved in JSON or XML format.</param>
+        public void Save(string filePath, bool json)
         {
             try
-            {          
-                Type deviceType = null;
-                System.Collections.Generic.List<Type> types = new System.Collections.Generic.List<Type>();
-				if (System.Environment.OSVersion.Platform != PlatformID.Unix)
-				{
-	                foreach (GXProtocolAddIn it in GXDeviceList.Protocols.Values)
-	                {
-	                    GetAddInInfo(it, out deviceType, types);
-	                }
-				}
-                XmlWriterSettings settings = new XmlWriterSettings();
-                settings.Indent = true;
-                settings.Encoding = System.Text.Encoding.UTF8;
-                settings.CloseOutput = true;
-                settings.CheckCharacters = false;
-                IsSaving = true;
-                using (XmlWriter writer = XmlWriter.Create(filePath, settings))
+            {
+                if (json)
                 {
-                    DataContractSerializer x = new DataContractSerializer(this.GetType(), types.ToArray());
-                    x.WriteObject(writer, this);
-                    writer.Close();
+                    IsSaving = true;
+                    GXJsonParser.Save(this, filePath);
+                }
+                else
+                {
+                    Type deviceType = null;
+                    System.Collections.Generic.List<Type> types = new System.Collections.Generic.List<Type>();
+                    if (System.Environment.OSVersion.Platform != PlatformID.Unix)
+                    {
+                        foreach (GXProtocolAddIn it in GXDeviceList.Protocols.Values)
+                        {
+                            GetAddInInfo(it, out deviceType, types);
+                        }
+                    }
+                    XmlWriterSettings settings = new XmlWriterSettings();
+                    settings.Indent = true;
+                    settings.Encoding = System.Text.Encoding.UTF8;
+                    settings.CloseOutput = true;
+                    settings.CheckCharacters = false;
+                    IsSaving = true;
+                    using (XmlWriter writer = XmlWriter.Create(filePath, settings))
+                    {
+                        DataContractSerializer x = new DataContractSerializer(this.GetType(), types.ToArray());
+                        x.WriteObject(writer, this);
+                        writer.Close();
+                    }
                 }
                 GXSite site;
                 foreach (GXSchedule schedule in this.Schedules)
@@ -1051,7 +1031,7 @@ namespace Gurux.Device
                 return;
             }
             List<string> foundProtocols = new List<string>(protocols.Keys);
-            //If application domain is already cfeated.
+            //If application domain is already created.
             if (!string.IsNullOrEmpty(AppDomain.CurrentDomain.RelativeSearchPath))
             {
                 GXProxyClass pc = new GXProxyClass();                
@@ -1112,45 +1092,40 @@ namespace Gurux.Device
 
         private static void FindProtocolAddIns(Dictionary<string, GXProtocolAddIn> protocols, Assembly asm)
         {
-            // Iterate through each module in this assembly
-            foreach (Module mod in asm.GetModules())
+            if (Gurux.Common.GXCommon.IsDefaultAssembly(asm))
             {
-                try
-                {
-                    // Iterate through the types in this module
-                    foreach (Type type in mod.GetTypes())
-                    {
-                        if (type.IsAbstract)
-                        {
-                            continue;
-                        }
-                        GXProtocolAddIn GXAddIn = null;
-                        if (type.IsSubclassOf(typeof(GXProtocolAddIn)))
-                        {
-                            GXAddIn = (GXProtocolAddIn)Activator.CreateInstance(type);
-                            //AddIn resources must load separetly, or resources don't update.
-                            string path = Path.Combine(System.IO.Path.GetDirectoryName(asm.Location), System.Threading.Thread.CurrentThread.CurrentCulture.TwoLetterISOLanguageName);
-                            path = Path.Combine(path, System.IO.Path.GetFileNameWithoutExtension(asm.Location) + ".resources.dll");
-                            if (System.IO.File.Exists(path))
-                            {
-                                Assembly.LoadFile(path);
-                            }
-                            string tmp = GXAddIn.Name;
-                            //If name already exists.
-                            if (protocols.ContainsKey(tmp))
-                            {
-                                continue;
-                            }
-                            protocols.Add(tmp, GXAddIn);
-                        }
-                    }
-                }
-                catch (Exception Ex)
+                return;
+            }
+            
+            // Iterate through the types in this module
+            foreach (Type type in asm.GetTypes())
+            {
+                if (type.IsAbstract)
                 {
                     continue;
+                }                
+
+                GXProtocolAddIn GXAddIn = null;
+                if (type.IsSubclassOf(typeof(GXProtocolAddIn)))
+                {
+                    GXAddIn = (GXProtocolAddIn)Activator.CreateInstance(type);
+                    //AddIn resources must load separately, or resources don't update.
+                    string path = Path.Combine(System.IO.Path.GetDirectoryName(asm.Location), System.Threading.Thread.CurrentThread.CurrentCulture.TwoLetterISOLanguageName);
+                    path = Path.Combine(path, System.IO.Path.GetFileNameWithoutExtension(asm.Location) + ".resources.dll");
+                    if (System.IO.File.Exists(path))
+                    {
+                        Assembly.LoadFile(path);
+                    }
+                    string tmp = GXAddIn.Name;
+                    //If name already exists.
+                    if (protocols.ContainsKey(tmp))
+                    {
+                        continue;
+                    }
+                    protocols.Add(tmp, GXAddIn);
                 }
-            }
-        }
+            }                           
+        }        
 
         /// <summary>
         /// FindItemByID finds an item using item identification.

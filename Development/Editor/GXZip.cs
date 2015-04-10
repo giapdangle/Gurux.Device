@@ -32,17 +32,13 @@
 
 using System;
 using System.IO;
-using System.Text;
 using System.Collections;
 using System.Windows.Forms;
-using System.Runtime.Serialization.Formatters.Binary;
-using Microsoft.Win32;
-using System.Linq;
 using ICSharpCode.SharpZipLib.Zip;
 using System.Reflection;
-using Gurux.Common;
 using System.Collections.Generic;
 using Gurux.Device.Properties;
+using Gurux.Common.JSon;
 
 namespace Gurux.Device.Editor
 {
@@ -151,38 +147,28 @@ namespace Gurux.Device.Editor
                 throw new Exception(Resources.CouldNotFindUnpackedDeviceFile);
             }
 
-            string protocol = null, deviceType = null;
-            bool preset;
-            Guid deviceGuid;            
-            GXDevice.GetProtocolInfo(DevicePath, out preset, out protocol, out deviceType, out deviceGuid);
+            GXDeviceList.Update(TempPath);
             GXDeviceProfile type;
-            if (preset)
+            if (GXJsonParser.IsJSONFile(DevicePath))
             {
-                Gurux.Device.PresetDevices.GXPublishedDeviceProfile t = new Gurux.Device.PresetDevices.GXPublishedDeviceProfile();
-                t.DeviceGuid = t.Guid = deviceGuid;
-                t.Protocol = protocol;
-                t.Name = deviceType;
-                type = t;
+                type = GXDevice.Load(DevicePath);
             }
             else
             {
+                bool preset = false;
+                string protocol = null, profileName = null;                
+                Guid guid;
                 type = new GXDeviceProfile();
+                GXDevice.GetProtocolInfo(DevicePath, out preset, out protocol, out profileName, out guid);
                 type.Protocol = protocol;
-                type.Name = deviceType;
-                type.DeviceGuid = deviceGuid;
-            }
+                type.Name = profileName;
+                type.Guid = guid;
+            }                            
             string DeviceFilePath;
             string protocolPath;
             if (string.IsNullOrEmpty(target))
             {
-                if (preset)
-                {
-                    DeviceFilePath = GXDevice.GetDeviceProfilesPath(deviceGuid);
-                }
-                else
-                {
-                    DeviceFilePath = GXDevice.GetDeviceProfilesPath(protocol, deviceGuid);
-                }               
+                DeviceFilePath = GXDevice.GetDeviceProfilePath(type.Protocol, type.Guid);
                 protocolPath = Path.GetDirectoryName(DeviceFilePath);
             }
             else
@@ -280,18 +266,12 @@ namespace Gurux.Device.Editor
                     throw new Exception(string.Format(Resources.UnknownDataInExportedFile0, FileName));
                 }
             }
-
-            //Delete temp files
-            Directory.Delete(TempPath, true);
             //Register device
             if (string.IsNullOrEmpty(target))
             {
                 GXDeviceList.Update();
                 Device = GXDevice.Load(DeviceFilePath);
-                if (!preset)
-                {
-                    Device.Register();
-                }
+                Device.Register();
                 if (Device.m_AddIn != null)
                 {
                     Device.m_AddIn.InitializeAfterImport(Device);
@@ -351,11 +331,17 @@ namespace Gurux.Device.Editor
             System.Reflection.Assembly CurrentDomain_AssemblyResolve(object sender, ResolveEventArgs args)
             {
                 foreach (string it in Directory.GetFiles(TargetDirectory, "*.dll"))
-                {
+                {                    
                     Assembly asm = Assembly.LoadFile(it);
+                    //Do not load Gurux default assemblies.
                     if (asm.GetName().ToString() == args.Name)
                     {
-                        Assemblies.Add(it);
+                        if (args.Name != typeof(Gurux.Common.GXCommon).Assembly.FullName &&
+                            args.Name != typeof(Gurux.Communication.GXClient).Assembly.FullName &&
+                            args.Name != typeof(Gurux.Device.GXDevice).Assembly.FullName)
+                        {
+                            Assemblies.Add(it);
+                        }
                         return asm;
                     }
                 }
@@ -370,7 +356,7 @@ namespace Gurux.Device.Editor
 		/// <param name="path">Path to the file, where to export.</param>
         public static void Export(GXDevice device, string path)
         {
-            device.Save(path);
+            device.Save(path, false);
             List<string> filenames = new List<string>();
             filenames.Add(device.ProfilePath);
             string DevFolder = System.IO.Path.GetDirectoryName(device.ProfilePath);

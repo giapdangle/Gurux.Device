@@ -21,7 +21,7 @@ namespace Gurux.Device.PresetDevices
         {
             m_Models = new GXDeviceModelCollection(this);            
         }
-
+        
         /// <summary>
         /// Copy Constructor.
         /// </summary>
@@ -91,17 +91,6 @@ namespace Gurux.Device.PresetDevices
                     m_Models.Parent = this;
                 }
             }
-        }
-
-        /// <summary>
-        /// Download status.
-        /// </summary>
-        [DefaultValue(DownloadStates.None)]
-        [DataMember(IsRequired = false, EmitDefaultValue = false)]
-        public DownloadStates Status
-        {
-            get;
-            set;
         }
     }
 }

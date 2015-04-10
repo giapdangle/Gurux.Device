@@ -30,15 +30,6 @@
 // Full text may be retrieved at http://www.gnu.org/licenses/gpl-2.0.txt
 //---------------------------------------------------------------------------
 
-//**********************************************************************************
-// Creator: T. Shrove
-// Date: 7/25/09
-// Email: tshrove@gmail.com
-// Website: http://www.tshrove.com
-// Code Website: http://code.tshrove.com
-// This is for use only. Not for sale. If you make any changes to it please email 
-// me a copy of the updated source code.
-//**********************************************************************************
 using System;
 using System.Collections.Generic;
 using System.Text;
@@ -90,7 +81,11 @@ namespace Gurux.Device
         protected List<T> Items
         {
             get { return this.m_pItems; }
-            private set { this.m_pItems = value; }
+            private 
+            set 
+            { 
+                this.m_pItems = value; 
+            }
         }
         #endregion
 
@@ -362,7 +357,9 @@ namespace Gurux.Device
 		/// </summary>
         public int Add(object value)
         {
-            this.Items.Add((T) value);
+            OnBeforeItemAdded(this, new GenericItemEventArgs<T>((T)value));
+            this.Items.Add((T)value);
+            OnItemAdded(this, new GenericItemEventArgs<T>((T)value));            
             return this.Items.Count - 1;
         }			
 

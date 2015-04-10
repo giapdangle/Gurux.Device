@@ -176,6 +176,23 @@ namespace Gurux.Device
         }
 
         /// <summary>
+        /// Property type used in serialization.
+        /// </summary>
+        [DataMember(Name = "Type", IsRequired = true)]
+        internal string PropertyType
+        {
+            get
+            {
+                return this.GetType().FullName;
+            }
+            set
+            {
+
+            }
+        }
+
+
+        /// <summary>
         /// Retrieves a string representation of the value of the instance in the GXProperty class.
         /// </summary>
         /// <returns>A string representation of the value of the instance.</returns>

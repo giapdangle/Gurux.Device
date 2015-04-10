@@ -100,6 +100,21 @@ namespace Gurux.Device
         }
 
         /// <summary>
+        /// Category type used in serialization.
+        /// </summary>
+        [DataMember(Name = "Type", IsRequired = true)]
+        internal string PropertyType
+        {
+            get
+            {
+                return this.GetType().FullName;
+            }
+            set
+            {
+
+            }
+        }
+        /// <summary>
         /// DisplayName is a localized name for the categoy.
         /// </summary>
         [ValueAccess(ValueAccessType.None, ValueAccessType.None)]

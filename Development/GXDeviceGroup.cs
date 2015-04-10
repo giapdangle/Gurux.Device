@@ -179,31 +179,23 @@ namespace Gurux.Device
         {
             get
             {
-                Dictionary<string, GXDevice> DeviceProfiles = new Dictionary<string,GXDevice>();
+                Dictionary<Guid, GXDevice> DeviceProfiles = new Dictionary<Guid,GXDevice>();
                 GXSerializedDevice[] devices = new GXSerializedDevice[m_Devices.Count];                                
                 int pos = -1;
-                foreach (GXDevice it in Devices)
+                foreach (GXDevice it in m_Devices)
                 {
-                    GXDevice templ = null;
-                    if (DeviceProfiles.ContainsKey(it.ProtocolName + it.DeviceProfile))
+                    GXDevice dev = null;
+                    if (DeviceProfiles.ContainsKey(it.ProfileGuid))
                     {
-                        templ = DeviceProfiles[it.ProtocolName + it.DeviceProfile];
+                        dev = DeviceProfiles[it.ProfileGuid];
                     }
                     else
                     {
-                        string path;
-                        if (it.IsPreset)
-                        {
-                            path = GXDevice.GetDeviceProfilesPath(it.Guid);
-                        }
-                        else
-                        {
-                            path = GXDevice.GetDeviceProfilesPath(it.ProtocolName, it.Guid);
-                        }
-                        templ = GXDevice.Load(path);
-                        DeviceProfiles.Add(it.ProtocolName + it.DeviceProfile, templ);
+                        string path = it.ProfilePath;
+                        dev = GXDevice.Load(path);
+                        DeviceProfiles.Add(it.ProfileGuid, dev);
                     }
-                    devices[++pos] = new GXSerializedDevice(it, templ);
+                    devices[++pos] = new GXSerializedDevice(it, dev);
                 }
                 return devices;
             }

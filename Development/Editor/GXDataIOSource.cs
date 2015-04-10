@@ -231,7 +231,7 @@ namespace Gurux.Device.Editor
 		{
 			if (Target is GXDevice)
 			{
-				return ((GXDevice)Target).DeviceProfile;
+                return GXDeviceList.DeviceProfiles.Find(((GXDevice)Target).Guid).Name;
 			}
 			else if (Target is GXCategory)
 			{
@@ -366,10 +366,10 @@ namespace Gurux.Device.Editor
 					case GXDevice.AvailableTargets.Name:
 						return device.Name;
 					case GXDevice.AvailableTargets.DeviceType:
-						return device.DeviceProfile;
+                        return GXDeviceList.DeviceProfiles.Find(device.Guid).Name;
 					case GXDevice.AvailableTargets.ProtocolName:
-						return device.DeviceProfile;
-					case GXDevice.AvailableTargets.UpdateInterval:
+                        return GXDeviceList.DeviceProfiles.Find(device.Guid).Protocol;
+                    case GXDevice.AvailableTargets.UpdateInterval:
 						return device.UpdateInterval.ToString();
 					case GXDevice.AvailableTargets.ResendWaitTime:
 						if (device != null)

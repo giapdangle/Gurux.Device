@@ -41,7 +41,7 @@ namespace Gurux.Device.Editor
     /// With GXSite class, component design time support is added.
     /// </summary>
     [ToolboxItem(false)]
-    [System.Runtime.Serialization.DataContract()]
+    [System.Runtime.Serialization.DataContract, Serializable]
     public abstract class GXSite : IComponent
     {
         [System.Xml.Serialization.XmlIgnore()]

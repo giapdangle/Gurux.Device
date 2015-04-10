@@ -7,6 +7,7 @@ using Gurux.Common;
 using System.Runtime.Serialization;
 using Gurux.Device.Editor;
 using Gurux.Device.Properties;
+using Gurux.Common.JSon;
 
 namespace Gurux.Device.PresetDevices
 {
@@ -29,9 +30,7 @@ namespace Gurux.Device.PresetDevices
         /// <summary>
         /// Add the specified value.
         /// </summary>
-        /// <param name='value'>
-        /// Value.
-        /// </param>
+        /// <param name='value'>Value.</param>
         public void Add(GXDeviceManufacturer item)
         {
             GXDeviceManufacturer it = item as GXDeviceManufacturer;
@@ -41,6 +40,22 @@ namespace Gurux.Device.PresetDevices
             }
             m_List.Add(it);
         }
+
+        /// <summary>
+        /// Add the specified value.
+        /// </summary>
+        /// <param name='collection'>Collection of device manufacturers.</param>
+        public void AddRange(GXDeviceManufacturerCollection collection)
+        {
+            foreach (GXDeviceManufacturer it in collection)
+            {
+                if (it.Parent == null)
+                {
+                    it.Parent = this;
+                }
+            }
+            m_List.AddRange(collection);
+        } 
 
         /// <summary>
         /// Find manufacturer by name.
@@ -57,29 +72,7 @@ namespace Gurux.Device.PresetDevices
                 }
             }
             return null;
-        }
-
-        /// <summary>
-        /// Check is there preset device templates.
-        /// </summary>
-        /// <returns></returns>
-        public bool IsPresetDevices()
-        {
-            foreach (GXDeviceManufacturer man in m_List)
-            {
-                foreach (GXDeviceModel model in man.Models)
-                {
-                    foreach (GXDeviceVersion dv in model.Versions)
-                    {
-                        if (dv.Templates.Count != 0)
-                        {
-                            return true;
-                        }
-                    }
-                }
-            }
-            return false;
-        }
+        }       
 
         /// <summary>
         /// Find manufacturer by guid.
@@ -119,13 +112,13 @@ namespace Gurux.Device.PresetDevices
             {
                 name = (target as GXDeviceVersion).Name;
             }
-            else if (target is GXPublishedDeviceProfile)
+            else if (target is GXDeviceProfile)
             {
-                guid = (target as GXPublishedDeviceProfile).Guid;
+                guid = (target as GXDeviceProfile).Guid;
             }
-            else if (target is GXDeviceProfileVersion)
+            else if (target is Guid)
             {
-                guid = (target as GXDeviceProfileVersion).Guid;
+                guid = (Guid)target;
             }
             else
             {
@@ -150,72 +143,18 @@ namespace Gurux.Device.PresetDevices
                         {
                             return dv;
                         }
-                        foreach (GXPublishedDeviceProfile dt in dv.Templates)
+                        foreach (GXDeviceProfile dt in dv.Profiles)
                         {
                             if (guid == dt.Guid)
                             {
                                 return dt;
-                            }
-                            foreach (GXDeviceProfileVersion tv in dt.Versions)
-                            {
-                                if (guid == tv.Guid)
-                                {
-                                    return tv;
-                                }
-                            }
+                            }                           
                         }
                     }
                 }
             }
             return null;
-        }
-
-
-        /// <summary>
-        /// Find preset device type.
-        /// </summary>
-        /// <param name="manufacturer">Name of the manufacturer.</param>
-        /// <param name="model">Name of the model</param>
-        /// <param name="deviceVersion">Device version.</param>
-        /// <param name="presetName">Preset name.</param>
-        /// <returns>Found GXDeviceType or null if not found.</returns>
-        public GXDeviceProfile Find(string manufacturer, string model, string deviceVersion, string presetName)
-        {
-            GXDeviceManufacturer man = Find(manufacturer);
-            if (man == null)
-            {
-                return null;
-            }
-            GXDeviceModel mod = man.Models.Find(model);
-            if (mod == null)
-            {
-                return null;
-            }
-            GXDeviceVersion ver = mod.Versions.Find(deviceVersion);
-            if (ver == null)
-            {
-                return null;
-            }
-            return ver.Templates.Find(presetName);
-        }
-
-        /// <summary>
-        /// Find preset device type.
-        /// </summary>
-        /// <param name="manufacturer">Name of the manufacturer.</param>
-        /// <param name="model">Name of the model</param>
-        /// <param name="deviceVersion">Device version.</param>
-        /// <param name="presetName">Preset name.</param>
-        /// <returns>Found GXTemplateVersion or null if not found.</returns>
-        public GXDeviceProfileVersion Find(string manufacturer, string model, string deviceVersion, string presetName, int version)
-        {
-            GXPublishedDeviceProfile type = Find(manufacturer, model, deviceVersion, presetName) as GXPublishedDeviceProfile;
-            if (type != null)
-            {
-                return type.Versions.Find(version);
-            }
-            return null;
-        }
+        }       
 
         /// <summary>
         /// Path where published templates are saved.
@@ -245,76 +184,33 @@ namespace Gurux.Device.PresetDevices
                     }
                     path = Path.Combine(path, "Gurux");
                 }
-                path = Path.Combine(path, "PresetDevices");
-                return Path.Combine(path, "Published.xml");
+                path = Path.Combine(path, "Devices");
+                return Path.Combine(path, "Published.json");
             }
         }
 
         /// <summary>
-        /// Path where preset template settings are saved.
+        /// Load published device profiles.
         /// </summary>
-        public static string PresetDevicesPath
-        {
-            get
-            {
-                string path = string.Empty;
-                if (Environment.OSVersion.Platform == PlatformID.Unix)
-                {
-                    path = Environment.GetFolderPath(Environment.SpecialFolder.Personal);
-                    path = Path.Combine(path, ".Gurux");
-                }
-                else
-                {
-                    //Vista: C:\ProgramData
-                    //XP: c:\Program Files\Common Files                
-                    //XP = 5.1 & Vista = 6.0
-                    if (Environment.OSVersion.Version.Major >= 6)
-                    {
-                        path = Environment.GetFolderPath(Environment.SpecialFolder.CommonApplicationData);
-                    }
-                    else
-                    {
-                        path = Environment.GetFolderPath(Environment.SpecialFolder.CommonProgramFiles);
-                    }
-                    path = Path.Combine(path, "Gurux");
-                }
-                path = Path.Combine(path, "PresetDevices");
-                return Path.Combine(path, "PresetDevices.xml");
-            }
-        }
-
+        /// <param name="manufacturers"></param>
         public static void Load(GXDeviceManufacturerCollection manufacturers)
         {
-            Load(manufacturers, PresetDevicesPath);
+            Load(manufacturers, PublishedPath);
         }
 
+        /// <summary>
+        /// Load preset or published device profiles.
+        /// </summary>
+        /// <param name="Manufacturers"></param>
+        /// <param name="path"></param>
         public static void Load(GXDeviceManufacturerCollection Manufacturers, string path)
         {
-            Manufacturers.Clear();
+            Manufacturers.Clear();            
             if (File.Exists(path) && new FileInfo(path).Length != 0)
             {
-                Type[] extraTypes = new Type[] { typeof(GXDeviceManufacturerCollection), typeof(GXDeviceManufacturer), typeof(GXDeviceModelCollection), typeof(GXDeviceModel), typeof(GXDeviceVersionCollection), typeof(GXPublishedDeviceProfile) };
-                DataContractSerializer x = new DataContractSerializer(typeof(GXDeviceManufacturerCollection), extraTypes);
-                lock (Manufacturers)
-                {
-                    using (FileStream reader = new FileStream(path, FileMode.Open, FileAccess.Read, FileShare.Read))
-                    {
-                        try
-                        {
-                            GXDeviceManufacturerCollection items = x.ReadObject(reader) as GXDeviceManufacturerCollection;
-                            //Update parents
-                            foreach (GXDeviceManufacturer it in items)
-                            {
-                                Manufacturers.Add(it);
-                            }
-                            Manufacturers.LastUpdated = items.LastUpdated;
-                        }
-                        catch (Exception Ex)
-                        {
-                            System.Diagnostics.Debug.WriteLine(Ex.Message);
-                        }
-                    }
-                }
+                GXDeviceManufacturerCollection items = GXJsonParser.Load<GXDeviceManufacturerCollection>(path);
+                Manufacturers.AddRange(items);
+                Manufacturers.LastUpdated = items.LastUpdated;
             }
         }
 
@@ -323,7 +219,7 @@ namespace Gurux.Device.PresetDevices
         /// </summary>
         public void Save()
         {
-            Save(this, PresetDevicesPath);
+            Save(this, PublishedPath);
         }
 
         public static void Save(GXDeviceManufacturerCollection manufacturers, string path)
@@ -335,25 +231,7 @@ namespace Gurux.Device.PresetDevices
                 {
                     Directory.CreateDirectory(Path.GetDirectoryName(path));
                 }
-                Type[] extraTypes = new Type[] { typeof(GXDeviceManufacturerCollection), typeof(GXDeviceManufacturer), typeof(GXDeviceModelCollection), typeof(GXDeviceModel), typeof(GXDeviceVersionCollection), typeof(GXPublishedDeviceProfile) };
-                DataContractSerializer x = new DataContractSerializer(typeof(GXDeviceManufacturerCollection), extraTypes);
-                XmlWriterSettings settings = new XmlWriterSettings();
-                settings.Indent = true;
-                settings.Encoding = System.Text.Encoding.UTF8;
-                settings.CloseOutput = true;
-                settings.CheckCharacters = false;
-                lock (manufacturers)
-                {
-                    using (FileStream stream = new FileStream(path, FileMode.Create, FileAccess.Write, FileShare.None))
-                    {
-                        using (XmlWriter writer = XmlWriter.Create(stream, settings))
-                        {
-                            x.WriteObject(writer, manufacturers);
-                        }
-                    }
-                    
-                }
-                GXFileSystemSecurity.UpdateFileSecurity(path);
+                GXJsonParser.Save(manufacturers, path);
             }
             else
             {
@@ -385,41 +263,36 @@ namespace Gurux.Device.PresetDevices
                 {
                     foreach (GXDeviceVersion ver in mod.Versions)
                     {
-                        foreach (GXPublishedDeviceProfile type in ver.Templates)
+                        foreach (GXDeviceProfile type in ver.Profiles)
                         {
-                            foreach (GXDeviceProfileVersion tv in type.Versions)
+                            if (type.Date > dt)
                             {
-                                if (tv.Date > dt)
+                                GXDeviceManufacturer man2 = items.Find(man);
+                                if (man2 == null)
                                 {
-                                    GXDeviceManufacturer man2 = items.Find(man);
-                                    if (man2 == null)
-                                    {
-                                        man2 = new GXDeviceManufacturer(man);
-                                        man2.Models.Clear();
-                                        items.Add(man2);
-                                    }
-                                    GXDeviceModel mod2 = man2.Models.Find(mod);
-                                    if (mod2 == null)
-                                    {
-                                        mod2 = new GXDeviceModel(mod);
-                                        mod2.Versions.Clear();
-                                        man2.Models.Add(mod2);
-                                    }
-                                    GXDeviceVersion ver2 = mod2.Versions.Find(ver);
-                                    if (ver2 == null)
-                                    {
-                                        ver2 = new GXDeviceVersion(ver);
-                                        ver2.Templates.Clear();
-                                        mod2.Versions.Add(ver2);
-                                    }
-                                    GXPublishedDeviceProfile type2 = ver2.Templates.Find(type);
-                                    if (type2 == null)
-                                    {
-                                        type2 = new GXPublishedDeviceProfile(type);
-                                        type2.Versions.Clear();
-                                        ver2.Templates.Add(type2);
-                                    }
-                                    type2.Versions.Add(new GXDeviceProfileVersion(tv));
+                                    man2 = new GXDeviceManufacturer(man);
+                                    man2.Models.Clear();
+                                    items.Add(man2);
+                                }
+                                GXDeviceModel mod2 = man2.Models.Find(mod);
+                                if (mod2 == null)
+                                {
+                                    mod2 = new GXDeviceModel(mod);
+                                    mod2.Versions.Clear();
+                                    man2.Models.Add(mod2);
+                                }
+                                GXDeviceVersion ver2 = mod2.Versions.Find(ver);
+                                if (ver2 == null)
+                                {
+                                    ver2 = new GXDeviceVersion(ver);
+                                    ver2.Profiles.Clear();
+                                    mod2.Versions.Add(ver2);
+                                }                                
+                                GXDeviceProfile type2 = ver2.Profiles.Find(type.Guid);
+                                if (type2 == null)
+                                {
+                                    type2 = new GXDeviceProfile(type);
+                                    ver2.Profiles.Add(type2);
                                 }
                             }
                         }

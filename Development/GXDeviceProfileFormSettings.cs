@@ -1,4 +1,4 @@
-//
+﻿//
 // --------------------------------------------------------------------------
 //  Gurux Ltd
 // 
@@ -30,74 +30,44 @@
 // Full text may be retrieved at http://www.gnu.org/licenses/gpl-2.0.txt
 //---------------------------------------------------------------------------
 
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Runtime.Serialization;
-
 namespace Gurux.Device
 {
-    [DataContract()]
-    internal class GXParameter
+    /// <summary>
+    /// Class is used to serialize device profile settings.
+    /// </summary>
+    class GXDeviceProfileFormSettings
     {
         /// <summary>
-        /// Default constructor.
+        /// Are custom devices shown.
         /// </summary>
-        public GXParameter()
+        public bool Custom
         {
-
-        }
+            get;
+            set;
+        }        
 
         /// <summary>
-        /// Constructor
+        /// Are downloadable devices shown.
         /// </summary>
-        public GXParameter(ulong id, string name, object value, Type type)
-        {
-            this.ID = id;
-            this.Name = name;
-            if (value != null)
-            {
-                this.Value = Convert.ToString(value);
-                if (type == typeof(object))
-                {
-                    Type = value.GetType().FullName;
-                }
-            }
-        }
-
-        [DataMember(IsRequired = true)]
-        public ulong ID
+        public bool Download
         {
             get;
             set;
         }
 
         /// <summary>
-        /// Parameter name.
+        /// Are earlier versions shown.
         /// </summary>
-        [DataMember(IsRequired = true)]
-        public string Name
+        public bool Earlier
         {
             get;
             set;
         }
 
         /// <summary>
-        /// Parameter value.
+        /// Search text.
         /// </summary>
-        [DataMember(Name = "Value", IsRequired = false, EmitDefaultValue = false)]
-        public string Value
-        {
-            get;
-            set;
-        }
-
-        /// <summary>
-        /// Parameter value.
-        /// </summary>
-        [DataMember(IsRequired = false, EmitDefaultValue = false)]
-        public string Type
+        public string SearchText
         {
             get;
             set;

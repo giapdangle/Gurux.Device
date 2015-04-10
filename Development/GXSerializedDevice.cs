@@ -43,7 +43,7 @@ namespace Gurux.Device
     [DataContract(Name="GXDevice")]
     internal class GXSerializedDevice
     {
-        GXSerializedDevice()
+        internal GXSerializedDevice()
         {            
         }
 
@@ -75,25 +75,19 @@ namespace Gurux.Device
             }
         }
 
-        public GXSerializedDevice(GXDevice device, GXDevice DeviceProfiles)
+        internal GXSerializedDevice(GXDevice device, GXDevice DeviceProfiles)
         {
             this.ID = device.ID;
             this.ProtocolName = device.ProtocolName;
-            this.DeviceProfile = device.DeviceProfile;
-            this.Name = device.Name;
+            this.ProfileName = device.ProfileName;
+            this.Profile = device.ProfileGuid;
+            this.Name = device.Name;            
             this.Guid = device.Guid;
             this.MediaType = device.GXClient.MediaType;
             this.MediaSettings = device.GXClient.MediaSettings;
             this.ResendCount = device.ResendCount;
             this.WaitTime = device.WaitTime;
             this.UpdateInterval = device.UpdateInterval;
-            if (!string.IsNullOrEmpty(device.Manufacturer))
-            {
-                this.Manufacturer = device.Manufacturer;
-                this.Model = device.Model;
-                this.Version = device.Version;
-                this.PresetName = device.PresetName;
-            }
 
             List<GXParameter> parameters = new List<GXParameter>();
             SaveParameters(device, device.ID, parameters, DeviceProfiles);
@@ -114,23 +108,13 @@ namespace Gurux.Device
  
         public GXDevice CreateDevice()
         {
-            GXDevice device;
-            if (!string.IsNullOrEmpty(Manufacturer))
-            {
-                device = GXDevice.Create(this.Manufacturer, this.Model, this.Version, this.PresetName, this.Name);
-            }
-            else
-            {
-                device = GXDevice.Create(this.ProtocolName, this.DeviceProfile, this.Name);
-            }
+            GXDeviceProfile dp = GXDeviceList.DeviceProfiles.Find(this.Profile);
+            GXDevice device = GXDevice.Create(dp.Protocol, dp.Name, Name);
             device.ID = this.ID;
             Gurux.Common.IGXMedia media = device.GXClient.SelectMedia(this.MediaType);
             device.ResendCount = this.ResendCount;
             device.WaitTime = this.WaitTime;
             device.UpdateInterval = this.UpdateInterval;
-            device.Manufacturer = this.Manufacturer;
-            device.Model = this.Model;
-            device.Version = this.Version;
             if (media != null)
             {
                 media.Settings = this.MediaSettings;
@@ -195,6 +179,21 @@ namespace Gurux.Device
             get;
             set;
         }
+
+        /// <summary>
+        /// Retrieves or sets the name of the profile.
+        /// </summary>
+        /// <remarks>
+        /// This is not nessery needed, but this is for just in case ir we need to know what profile is used.
+        /// </remarks>
+        [ReadOnly(true), Category("Design"), Description("Retrieves or sets the name of the profile.")]
+        [DataMember(IsRequired = true)]
+        public string ProfileName
+        {
+            get;
+            set;
+        }
+        
         
         /// <summary>
         /// Preset name of the device.
@@ -211,14 +210,14 @@ namespace Gurux.Device
         /// </summary>
         [Browsable(false), ReadOnly(true), Category("Design"), Description("Retrieves or sets the DeviceType of the device. DeviceType is defined in device template.")]
         [DataMember(IsRequired = true)]
-        public string DeviceProfile
+        public Guid Profile
         {
             get;
             set;
         }
 
         /// <summary>
-        /// Each device has creation Guid that is set when new device template is created.
+        /// Each device has creation Guid that is set when new device profile is created.
         /// </summary>
         [DataMember(IsRequired = true)]
         [ReadOnly(true), Browsable(false)]

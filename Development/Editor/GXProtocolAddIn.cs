@@ -134,7 +134,7 @@ namespace Gurux.Device.Editor
 		}
 
 		/// <summary>
-		/// Returns available functionalies for the target.
+		/// Returns available functionalities for the target.
 		/// </summary>
 		public virtual Functionalities GetFunctionalities(object target)
 		{
@@ -209,7 +209,7 @@ namespace Gurux.Device.Editor
 		}
 		
 		/// <summary>
-        /// Determines what fuctionalities are provided with wizard user interface.
+        /// Determines what functionalities are provided with wizard user interface.
         /// </summary>
         public VisibilityItems WizardAvailable
 		{

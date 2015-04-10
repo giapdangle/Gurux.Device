@@ -59,13 +59,6 @@ namespace Gurux.Device
                 return base.IsReadOnly;
             }
         }        
-
-        /// <summary>
-        /// Serialization constructor.
-        /// </summary>
-        internal GXTableCollection()
-        {
-        }
 		
 		/// <summary>
 		/// Add the specified value.
